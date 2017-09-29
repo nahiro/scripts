@@ -1,0 +1,59 @@
+#!/bin/sh
+#########################################
+#                                       #
+# ps2png -- converts *.ps file to *.png #
+#                                       #
+# 28/Jul/2001 N.M.                      #
+#                                       #
+#########################################
+
+DPI=100
+MARGIN=10
+
+if [ $# -lt 1 ] || [ "$1" = "-h" ] ; then
+	echo " Usage: ps2png <BaseName> <DPI> <MARGIN>" >&2
+	exit 1
+else
+	test=`echo $1 | grep -s '.ps'`
+	if [ "${test}" ] ; then
+	  BASE=${1%.ps*}
+	else
+	  BASE=$1
+	fi
+	if [ $# -ge 2 ] && [ $2 -gt 0 ] ; then
+	  DPI=$2
+	fi
+	if [ $# -ge 3 ] && [ $3 -ge 0 ] ; then
+	  MARGIN=$3
+	fi
+	echo "ps2png option   : DPI=${DPI} MARGIN=${MARGIN}" >&2
+	echo "       PS  file : ${BASE}.ps" >&2
+	echo "       PNG file : ${BASE}.png" >&2
+	if [ ${MARGIN} -gt 0 ] ; then
+		gs \
+		   -sDEVICE=ppmraw \
+		   -r${DPI} \
+		   -sOutputFile=- \
+		   -sNOPAUSE \
+		   -q \
+		   ${BASE}.ps \
+		   -c showpage \
+		   -c quit | \
+		pnmcrop | \
+		pnmmargin \
+		   -white ${MARGIN} | \
+		pnmtopng >${BASE}.png
+	else
+		gs \
+		   -sDEVICE=ppmraw \
+		   -r${DPI} \
+		   -sOutputFile=- \
+		   -sNOPAUSE \
+		   -q \
+		   ${BASE}.ps \
+		   -c showpage \
+		   -c quit | \
+		pnmcrop | \
+		pnmtopng >${BASE}.png
+	fi
+fi

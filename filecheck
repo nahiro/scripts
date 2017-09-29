@@ -1,0 +1,78 @@
+#!/usr/bin/env python
+# filecheck
+# Checks files in source_directory and destination_directory
+# Author: N.Manago Mar,25,2006
+# $Revision: 66 $
+# $Date: 2014-11-12 15:40:11 +0900 (Wed, 12 Nov 2014) $
+import os
+import sys
+import re
+import filecmp
+from subprocess import call
+from optparse import OptionParser,IndentedHelpFormatter
+
+# Default values
+SRCDIR = '.'
+
+# Read options
+parser = OptionParser(formatter=IndentedHelpFormatter(max_help_position=200,width=200))
+parser.set_usage('Usage: %prog destination_directory [options]')
+parser.add_option('-s','--srcdir',default=SRCDIR,help='Set source_directory (%default)')
+parser.add_option('--dstdir',default=None,help='Set destination_directory (%default)')
+parser.add_option('-d','--move_different',default=False,action='store_true',help='Move different files to destination_directory (%default)')
+parser.add_option('-m','--move_missing',default=False,action='store_true',help='Move missing files to destination_directory (%default)')
+parser.add_option('-r','--remove_same',default=False,action='store_true',help='Remove same files (%default)')
+parser.add_option('-q','--quiet',default=False,action='store_true',help='Quiet mode (%default)')
+(opts,args) = parser.parse_args()
+if opts.dstdir is None:
+    if len(args) != 1:
+        parser.print_help()
+        sys.exit(-1)
+    else:
+        opts.dstdir = args[0]
+if not os.path.isdir(opts.dstdir):
+    raise IOError('No such directory >>> '+opts.dstdir)
+if opts.quiet:
+    mopt = ''
+else:
+    mopt = ' -i'
+
+nsam = 0
+nmis = 0
+ndif = 0
+nmov = 0
+nrem = 0
+for f in sorted(os.listdir(opts.srcdir)):
+    fnam = '%s/%s'%(opts.srcdir,f)
+    gnam = '%s/%s'%(opts.dstdir,f)
+    if os.path.isdir(fnam):
+        sys.stderr.write('Skipping directory %s\n'%(fnam))
+        continue
+    if not os.path.exists(gnam):
+        sys.stderr.write('M %s\n'%(f))
+        if opts.move_missing:
+            call('mv'+mopt+' "%s" "%s/"'%(fnam,opts.dstdir),shell=True)
+            if not os.path.exists(fnam) and os.path.exists(gnam):
+                nmov += 1
+        nmis += 1
+    else:
+        if not filecmp.cmp(fnam,gnam,shallow=False):
+            sys.stderr.write('D %s\n'%(f))
+            if opts.move_different:
+                call('mv'+mopt+' "%s" "%s/"'%(fnam,opts.dstdir),shell=True)
+                if not os.path.exists(fnam) and os.path.exists(gnam):
+                    nmov += 1
+            ndif += 1
+        else:
+            if not opts.quiet or opts.remove_same:
+                sys.stderr.write('S %s\n'%(f))
+            if opts.remove_same:
+                call('rm'+mopt+' "%s"'%(fnam),shell=True)
+                if not os.path.exists(fnam):
+                    nrem += 1
+            nsam += 1
+sys.stderr.write('Same    : %5d files\n'%(nsam))
+sys.stderr.write('Missing : %5d files\n'%(nmis))
+sys.stderr.write('Differ  : %5d files\n'%(ndif))
+sys.stderr.write('Moved   : %5d files\n'%(nmov))
+sys.stderr.write('Removed : %5d files\n'%(nrem))
