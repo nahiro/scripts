@@ -28,5 +28,5 @@ for d in dirs:
     if not os.path.exists(d):
         sys.stderr.write('Warning, no such directory >>> '+d)
         continue
-    command = 'rsync -a --delete {} {}'.format(d,opts.dstdir)
+    command = 'rsync -a --delete --relative {} {}'.format(d,opts.dstdir)
     call(command,shell=True)
