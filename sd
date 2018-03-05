@@ -1,8 +1,10 @@
 #!/bin/bash
 
 if [ -d .svn ] ; then
+  echo "SVN"
   svn diff --diff-cmd diff -x "-U 0"
 elif [ -d .git ] ; then
+  echo "GIT"
   git diff -U0
 else
   echo "Neither .svn nor .git"
