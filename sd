@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ -d .svn ] ; then
+  svn diff --diff-cmd diff -x "-U 0"
+elif [ -d .git ] ; then
+  git diff -U0
+else
+  echo "Neither .svn nor .git"
+fi
