@@ -196,12 +196,16 @@ for line in lines:
                     if not opts.quiet:
                         sys.stderr.write('SI %s\n'%(fnam))
                 else:
-                    if not opts.quiet:
-                        sys.stderr.write('S %s\n'%(fnam))
-                    if opts.remove_same:
-                        remove_file(fnam,opts.quiet)
-                        if not os.path.exists(fnam):
-                            nrem += 1
+                    if os.path.dirname(os.path.realpath(fnam)) != os.path.abspath(os.path.dirname(fnam)): # inside a link
+                        if not opts.quiet:
+                            sys.stderr.write('SL %s\n'%(fnam))
+                    else:
+                        if not opts.quiet:
+                            sys.stderr.write('S %s\n'%(fnam))
+                        if opts.remove_same:
+                            remove_file(fnam,opts.quiet)
+                            if not os.path.exists(fnam):
+                                nrem += 1
                 nsam += 1
         continue
     m = re.search('Differing\s+files\s*:\s*(\[.*\])',line)
@@ -257,12 +261,16 @@ for line in lines:
                     if not opts.quiet:
                         sys.stderr.write('SI %s\n'%(fnam))
                 else:
-                    if not opts.quiet:
-                        sys.stderr.write('S %s\n'%(fnam))
-                    if opts.remove_same:
-                        remove_file(fnam,opts.quiet)
-                        if not os.path.exists(fnam):
-                            nrem += 1
+                    if os.path.dirname(os.path.realpath(fnam)) != os.path.abspath(os.path.dirname(fnam)): # inside a link
+                        if not opts.quiet:
+                            sys.stderr.write('SL %s\n'%(fnam))
+                    else:
+                        if not opts.quiet:
+                            sys.stderr.write('S %s\n'%(fnam))
+                        if opts.remove_same:
+                            remove_file(fnam,opts.quiet)
+                            if not os.path.exists(fnam):
+                                nrem += 1
                 nsam += 1
         continue
     sys.stderr.write('Unprocessed line in (%s %s):\n'%(srcdir,dstdir))
