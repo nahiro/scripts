@@ -122,6 +122,8 @@ filecmp.dircmp(opts.srcdir,opts.dstdir,ignore=[]).report_full_closure()
 sys.stdout = old_stdout
 lines = mystdout.getvalue().splitlines()
 dirs = []
+move_list = []
+remove_list = []
 for line in lines:
     if not re.search('\S',line):
         srcdir = None
@@ -157,7 +159,7 @@ for line in lines:
                 if os.path.exists(gnam):
                     raise IOError('Error, already exists %s'%(gnam))
                 else:
-                    os.rename(fnam,gnam)
+                    move_file(fnam,gnam,opts.quiet)
                 if not os.path.exists(fnam) and os.path.exists(gnam):
                     nmov += 1
             nmis += 1
