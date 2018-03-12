@@ -1,10 +1,10 @@
 #!/bin/bash
 
 if [ -d .svn ] ; then
-  echo "SVN"
+  echo "SVN" >&2
   svn status
 elif [ -d .git ] ; then
-  echo "GIT"
+  echo "GIT" >&2
   git status
 else
   echo "Neither .svn nor .git"
