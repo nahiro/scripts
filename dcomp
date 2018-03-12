@@ -183,12 +183,16 @@ for line in lines:
                         nmov += 1
                 ndif += 1
             else:
-                if not opts.quiet:
-                    sys.stderr.write('S %s\n'%(fnam))
-                if opts.remove_same:
-                    remove_file(fnam,opts.quiet)
-                    if not os.path.exists(fnam):
-                        nrem += 1
+                if os.path.realpath(fnam) == os.path.realpath(gnam):
+                    if not opts.quiet:
+                        sys.stderr.write('SI %s\n'%(fnam))
+                else:
+                    if not opts.quiet:
+                        sys.stderr.write('S %s\n'%(fnam))
+                    if opts.remove_same:
+                        remove_file(fnam,opts.quiet)
+                        if not os.path.exists(fnam):
+                            nrem += 1
                 nsam += 1
         continue
     m = re.search('Differing\s+files\s*:\s*(\[.*\])',line)
@@ -240,12 +244,16 @@ for line in lines:
                         nmov += 1
                 ndif += 1
             else:
-                if not opts.quiet:
-                    sys.stderr.write('S %s\n'%(fnam))
-                if opts.remove_same:
-                    remove_file(fnam,opts.quiet)
-                    if not os.path.exists(fnam):
-                        nrem += 1
+                if os.path.realpath(fnam) == os.path.realpath(gnam):
+                    if not opts.quiet:
+                        sys.stderr.write('SI %s\n'%(fnam))
+                else:
+                    if not opts.quiet:
+                        sys.stderr.write('S %s\n'%(fnam))
+                    if opts.remove_same:
+                        remove_file(fnam,opts.quiet)
+                        if not os.path.exists(fnam):
+                            nrem += 1
                 nsam += 1
         continue
     sys.stderr.write('Unprocessed line in (%s %s):\n'%(srcdir,dstdir))
