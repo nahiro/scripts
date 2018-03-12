@@ -28,6 +28,7 @@ parser.add_option('-D','--copy_different',default=False,action='store_true',help
 parser.add_option('-m','--move_missing',default=False,action='store_true',help='Move missing files to destination_directory (%default)')
 parser.add_option('-M','--copy_missing',default=False,action='store_true',help='Copy missing files to destination_directory (%default)')
 parser.add_option('-r','--remove_same',default=False,action='store_true',help='Remove same files (%default)')
+parser.add_option('-n','--dry_run',default=False,action='store_true',help='Perform a trial run with no changes made (%default)')
 parser.add_option('-q','--quiet',default=False,action='store_true',help='Quiet mode (%default)')
 (opts,args) = parser.parse_args()
 if opts.dstdir is None:
@@ -269,29 +270,41 @@ ncop = 0
 nmov = 0
 nrem = 0
 for fnam,gnam,flag in copy_list:
-    copy_file(fnam,gnam,opts.quiet,directory=flag)
-    if os.path.exists(gnam):
-        ncop += 1
+    if opts.dry_run:
+        sys.stderr.write('cp %s %s\n'%(fnam,gnam))
+    else:
+        copy_file(fnam,gnam,opts.quiet,directory=flag)
+        if os.path.exists(gnam):
+            ncop += 1
 for fnam,gnam in move_list:
-    move_file(fnam,gnam,opts.quiet)
-    if not os.path.exists(fnam) and os.path.exists(gnam):
-        nmov += 1
+    if opts.dry_run:
+        sys.stderr.write('mv %s %s\n'%(fnam,gnam))
+    else:
+        move_file(fnam,gnam,opts.quiet)
+        if not os.path.exists(fnam) and os.path.exists(gnam):
+            nmov += 1
 for fnam in remove_list:
-    remove_file(fnam,opts.quiet)
-    if not os.path.exists(fnam):
-        nrem += 1
+    if opts.dry_run:
+        sys.stderr.write('rm %s\n'%(fnam))
+    else:
+        remove_file(fnam,opts.quiet)
+        if not os.path.exists(fnam):
+            nrem += 1
 if opts.remove_same:
     for d in dirs:
-        try:
-            if opts.quiet:
-                os.removedirs(d)
-            else:
-                sys.stderr.write('Remove %s?\n'%(d))
-                line = sys.stdin.readline()
-                if re.search('[yY]',line):
+        if opts.dry_run:
+            sys.stderr.write('rmdir %s\n'%(d))
+        else:
+            try:
+                if opts.quiet:
                     os.removedirs(d)
-        except Exception:
-            pass
+                else:
+                    sys.stderr.write('Remove %s?\n'%(d))
+                    line = sys.stdin.readline()
+                    if re.search('[yY]',line):
+                        os.removedirs(d)
+            except Exception:
+                pass
 sys.stderr.write('Same    : %5d files\n'%(nsam))
 sys.stderr.write('Missing : %5d files\n'%(nmis))
 sys.stderr.write('Differ  : %5d files\n'%(ndif))
