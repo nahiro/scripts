@@ -50,7 +50,10 @@ dstdir = os.path.abspath(opts.dstdir)
 def is_subdir(path,directory):
     path = os.path.realpath(path)
     directory = os.path.realpath(directory)
-    relative = os.path.relpath(path,directory)
+    try:
+        relative = os.path.relpath(path,directory)
+    except Exception:
+        relative = ''
     return not relative.startswith(os.pardir)
 
 def move_file(src,dst,quiet=False):
