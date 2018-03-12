@@ -39,11 +39,11 @@ if opts.dstdir is None:
 if not os.path.isdir(opts.dstdir):
     raise IOError('No such directory >>> '+opts.dstdir)
 else:
-    opts.dstdir = os.path.dirname(opts.dstdir) # to remove trailing '/'
+    opts.dstdir = opts.dstdir.rstrip(os.path.sep) # to remove trailing '/'
 if not os.path.isdir(opts.srcdir):
     raise IOError('No such directory >>> '+opts.srcdir)
 else:
-    opts.srcdir = os.path.dirname(opts.srcdir) # to remove trailing '/'
+    opts.srcdir = opts.srcdir.rstrip(os.path.sep) # to remove trailing '/'
 srcdir = os.path.abspath(opts.srcdir)
 dstdir = os.path.abspath(opts.dstdir)
 
