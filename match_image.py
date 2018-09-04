@@ -22,11 +22,13 @@ OUTPUT = 'output.png'
 
 # Read options
 parser = OptionParser(formatter=IndentedHelpFormatter(max_help_position=200,width=200))
+parser.add_option('--src_channel',default=None,type='int',help='Source color channel (%default)')
+parser.add_option('--tgt_channel',default=None,type='int',help='Target color channel (%default)')
 parser.add_option('-r','--angle_min',default=ANGLE_MIN,type='float',help='Min rotation angle in deg (%default)')
 parser.add_option('-R','--angle_max',default=ANGLE_MAX,type='float',help='Max rotation angle in deg (%default)')
 parser.add_option('--angle_stp',default=ANGLE_STP,type='float',help='Step rotation angle in deg (%default)')
-parser.add_option('-m','--scale_min',default=SCALE_MIN,type='float',help='Min scale_factor (%default)')
-parser.add_option('-M','--scale_max',default=SCALE_MAX,type='float',help='Max scale_factor (%default)')
+parser.add_option('-s','--scale_min',default=SCALE_MIN,type='float',help='Min scale_factor (%default)')
+parser.add_option('-S','--scale_max',default=SCALE_MAX,type='float',help='Max scale_factor (%default)')
 parser.add_option('--scale_stp',default=SCALE_STP,type='float',help='Step scale factor (%default)')
 parser.add_option('-W','--template_width',default=TEMPLATE_WIDTH,type='int',help='Template width in pixel (%default)')
 parser.add_option('-H','--template_height',default=TEMPLATE_HEIGHT,type='int',help='Template height in pixel (%default)')
@@ -39,8 +41,14 @@ if len(args) != 2:
     sys.stderr.write('Usage: match_image.py source_image target_image\n')
     sys.exit()
 
-src_img = cv2.imread(args[0],cv2.IMREAD_GRAYSCALE)
-tgt_img = cv2.imread(args[1],cv2.IMREAD_GRAYSCALE)
+if opts.src_channel is not None:
+    src_img = cv2.imread(args[0])[:,:,opts.src_channel]
+else:
+    src_img = cv2.imread(args[0],cv2.IMREAD_GRAYSCALE)
+if opts.tgt_channel is not None:
+    tgt_img = cv2.imread(args[1])[:,:,opts.tgt_channel]
+else:
+    tgt_img = cv2.imread(args[1],cv2.IMREAD_GRAYSCALE)
 if opts.template_x is None:
     opts.template_x = src_img.shape[1]//2
     opts.template_y = src_img.shape[0]//2
