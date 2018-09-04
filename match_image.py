@@ -28,10 +28,10 @@ parser.add_option('--angle_stp',default=ANGLE_STP,type='float',help='Step rotati
 parser.add_option('-m','--scale_min',default=SCALE_MIN,type='float',help='Min scale_factor (%default)')
 parser.add_option('-M','--scale_max',default=SCALE_MAX,type='float',help='Max scale_factor (%default)')
 parser.add_option('--scale_stp',default=SCALE_STP,type='float',help='Step scale factor (%default)')
-parser.add_option('--template_width',default=TEMPLATE_WIDTH,type='int',help='Template width in pixel (%default)')
-parser.add_option('--template_height',default=TEMPLATE_HEIGHT,type='int',help='Template height in pixel (%default)')
-parser.add_option('--template_x',default=None,type='int',help='Template X center in pixel (%default)')
-parser.add_option('--template_y',default=None,type='int',help='Template Y center in pixel (%default)')
+parser.add_option('-W','--template_width',default=TEMPLATE_WIDTH,type='int',help='Template width in pixel (%default)')
+parser.add_option('-H','--template_height',default=TEMPLATE_HEIGHT,type='int',help='Template height in pixel (%default)')
+parser.add_option('-x','--template_x',default=None,type='int',help='Template X center in pixel (%default)')
+parser.add_option('-y','--template_y',default=None,type='int',help='Template Y center in pixel (%default)')
 parser.add_option('-o','--output',default=OUTPUT,help='Output image name (%default)')
 (opts,args) = parser.parse_args()
 
@@ -53,6 +53,7 @@ template = src_img[src_y1:src_y2,src_x1:src_x2]
 angles = np.arange(opts.angle_min,opts.angle_max+0.1*opts.angle_stp,opts.angle_stp)
 scales = np.arange(opts.scale_min,opts.scale_max+0.1*opts.scale_stp,opts.scale_stp)
 coeffs = []
+cmax = -1.0e-20
 for scale in scales:
     tmp_img = zoom(tgt_img,scale)
     for angle in angles:
@@ -65,7 +66,9 @@ for scale in scales:
         tst_y2 = tst_y1+opts.template_height
         coeff = np.corrcoef(src_img[src_y1:src_y2,src_x1:src_x2].flatten(),tst_img[tst_y1:tst_y2,tst_x1:tst_x2].flatten())[0,1]
         coeffs.append(coeff)
-        sys.stderr.write('{:15.10f} {:15.10f} {:13.6e}\n'.format(angle,scale,coeff))
+        if coeff > cmax:
+            sys.stderr.write('{:15.10f} {:15.10f} {:13.6e}\n'.format(angle,scale,coeff))
+            cmax = coeff
 coeffs = np.array(coeffs).reshape(scales.size,angles.size)
 indx = np.unravel_index(np.argmax(coeffs),coeffs.shape)
 tst_img = rotate(zoom(tgt_img,scales[indx[0]]),angles[indx[1]])
