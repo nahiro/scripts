@@ -36,6 +36,7 @@ parser.add_option('-x','--template_x',default=None,type='int',help='Template X c
 parser.add_option('-y','--template_y',default=None,type='int',help='Template Y center in pixel (%default)')
 parser.add_option('-o','--output',default=OUTPUT,help='Output optimized image name (%default)')
 parser.add_option('--output_src',default=None,help='Output source image name (%default)')
+parser.add_option('--draw_src_frame',default=False,action='store_true',help='Superimpose a frame on the source image (%default)')
 (opts,args) = parser.parse_args()
 
 if len(args) != 2:
@@ -52,6 +53,7 @@ else:
     tgt_img = cv2.imread(args[1],cv2.IMREAD_GRAYSCALE)
 if opts.template_x is None:
     opts.template_x = src_img.shape[1]//2
+if opts.template_y is None:
     opts.template_y = src_img.shape[0]//2
 src_x1 = max(opts.template_x-opts.template_width//2,0)
 src_x2 = min(src_x1+opts.template_width,src_img.shape[1])
@@ -96,4 +98,6 @@ cut_y2 = min(src_img.shape[0]-src_y1,tst_img.shape[0]-tst_y1)
 out_img[src_y1-cut_y1:src_y1+cut_y2,src_x1-cut_x1:src_x1+cut_x2] = tst_img[tst_y1-cut_y1:tst_y1+cut_y2,tst_x1-cut_x1:tst_x1+cut_x2]
 cv2.imwrite(opts.output,out_img)
 if opts.output_src is not None:
+    if opts.draw_src_frame:
+        cv2.rectangle(src_img,(src_x1,src_y1),(src_x2,src_y2),255,2)
     cv2.imwrite(opts.output_src,src_img)
