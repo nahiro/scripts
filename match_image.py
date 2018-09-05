@@ -22,8 +22,8 @@ OUTPUT = 'output.png'
 
 # Read options
 parser = OptionParser(formatter=IndentedHelpFormatter(max_help_position=200,width=200))
-parser.add_option('--src_channel',default=None,type='int',help='Source color channel (%default)')
-parser.add_option('--tgt_channel',default=None,type='int',help='Target color channel (%default)')
+parser.add_option('--src_channel',default=None,type='int',help='Source color channel, B=0,G=1,R=2 (%default)')
+parser.add_option('--tgt_channel',default=None,type='int',help='Target color channel, B=0,G=1,R=2 (%default)')
 parser.add_option('-r','--angle_min',default=ANGLE_MIN,type='float',help='Min rotation angle in deg (%default)')
 parser.add_option('-R','--angle_max',default=ANGLE_MAX,type='float',help='Max rotation angle in deg (%default)')
 parser.add_option('--angle_stp',default=ANGLE_STP,type='float',help='Step rotation angle in deg (%default)')
