@@ -34,7 +34,8 @@ parser.add_option('-W','--template_width',default=TEMPLATE_WIDTH,type='int',help
 parser.add_option('-H','--template_height',default=TEMPLATE_HEIGHT,type='int',help='Template height in pixel (%default)')
 parser.add_option('-x','--template_x',default=None,type='int',help='Template X center in pixel (%default)')
 parser.add_option('-y','--template_y',default=None,type='int',help='Template Y center in pixel (%default)')
-parser.add_option('-o','--output',default=OUTPUT,help='Output image name (%default)')
+parser.add_option('-o','--output',default=OUTPUT,help='Output optimized image name (%default)')
+parser.add_option('--output_src',default=None,help='Output source image name (%default)')
 (opts,args) = parser.parse_args()
 
 if len(args) != 2:
@@ -52,10 +53,10 @@ else:
 if opts.template_x is None:
     opts.template_x = src_img.shape[1]//2
     opts.template_y = src_img.shape[0]//2
-src_x1 = opts.template_x-opts.template_width//2
-src_x2 = src_x1+opts.template_width
-src_y1 = opts.template_y-opts.template_height//2
-src_y2 = src_y1+opts.template_height
+src_x1 = max(opts.template_x-opts.template_width//2,0)
+src_x2 = min(src_x1+opts.template_width,src_img.shape[1])
+src_y1 = max(opts.template_y-opts.template_height//2,0)
+src_y2 = min(src_y1+opts.template_height,src_img.shape[0])
 template = src_img[src_y1:src_y2,src_x1:src_x2]
 
 angles = np.arange(opts.angle_min,opts.angle_max+0.1*opts.angle_stp,opts.angle_stp)
@@ -69,9 +70,9 @@ for scale in scales:
         result = cv2.matchTemplate(tst_img,template,cv2.TM_CCOEFF_NORMED)
         min_val,max_val,min_loc,max_loc = cv2.minMaxLoc(result)
         tst_x1 = max_loc[0]
-        tst_x2 = tst_x1+opts.template_width
+        tst_x2 = tst_x1+template.shape[1]
         tst_y1 = max_loc[1]
-        tst_y2 = tst_y1+opts.template_height
+        tst_y2 = tst_y1+template.shape[0]
         coeff = np.corrcoef(src_img[src_y1:src_y2,src_x1:src_x2].flatten(),tst_img[tst_y1:tst_y2,tst_x1:tst_x2].flatten())[0,1]
         coeffs.append(coeff)
         if coeff > cmax:
@@ -83,9 +84,9 @@ tst_img = rotate(zoom(tgt_img,scales[indx[0]]),angles[indx[1]])
 result = cv2.matchTemplate(tst_img,template,cv2.TM_CCOEFF_NORMED)
 min_val,max_val,min_loc,max_loc = cv2.minMaxLoc(result)
 tst_x1 = max_loc[0]
-tst_x2 = tst_x1+opts.template_width
+tst_x2 = tst_x1+template.shape[1]
 tst_y1 = max_loc[1]
-tst_y2 = tst_y1+opts.template_height
+tst_y2 = tst_y1+template.shape[0]
 
 out_img = np.zeros_like(src_img)
 cut_x1 = min(src_x1,tst_x1)
@@ -94,3 +95,5 @@ cut_x2 = min(src_img.shape[1]-src_x1,tst_img.shape[1]-tst_x1)
 cut_y2 = min(src_img.shape[0]-src_y1,tst_img.shape[0]-tst_y1)
 out_img[src_y1-cut_y1:src_y1+cut_y2,src_x1-cut_x1:src_x1+cut_x2] = tst_img[tst_y1-cut_y1:tst_y1+cut_y2,tst_x1-cut_x1:tst_x1+cut_x2]
 cv2.imwrite(opts.output,out_img)
+if opts.output_src is not None:
+    cv2.imwrite(opts.output_src,src_img)
