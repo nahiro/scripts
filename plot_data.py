@@ -36,6 +36,7 @@ parser.add_option('-T','--subtitle',default=None,help='Sub title (%default)')
 parser.add_option('-F','--fignam',default=None,help='Figure name (%default)')
 parser.add_option('--last_fignam',default=None,help='Last figure name (%default)')
 parser.add_option('-m','--marker',default=None,help='Marker (%default)')
+parser.add_option('-d','--delimiter',default=None,action='append',help='Delimiter (%default)')
 parser.add_option('--winx',default=WINX,type='float',help='Window X size in inch (%default)')
 parser.add_option('--winy',default=WINY,type='float',help='Window Y size in inch (%default)')
 parser.add_option('--winl',default=WINL,type='float',help='Window left (%default)')
@@ -71,7 +72,10 @@ for fnam in args:
             for i,line in enumerate(fp):
                 if opts.nrow is not None and i < opts.nrow:
                     continue
-                item = line.replace(',',' ').split()
+                if opts.delimiter is not None:
+                    for c in opts.delimiter:
+                        line = line.replace(c,' ')
+                item = line.split()
                 if len(item) < 3:
                     continue
                 if re.search('[^\d\s\.\+\-eE,]',item[opts.xcol]):
@@ -108,7 +112,10 @@ for fnam in args:
             for i,line in enumerate(fp):
                 if opts.nrow is not None and i < opts.nrow:
                     continue
-                item = line.replace(',',' ').split()
+                if opts.delimiter is not None:
+                    for c in opts.delimiter:
+                        line = line.replace(c,' ')
+                item = line.split()
                 if len(item) < 2:
                     continue
                 if re.search('[^\d\s\.\+\-eE,]',item[opts.xcol]):
