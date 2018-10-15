@@ -26,6 +26,7 @@ parser.add_option('-Y','--ymax',default=None,type='float',help='Y max (%default)
 parser.add_option('-i','--xcol',default=0,type='int',help='X column# (%default)')
 parser.add_option('-j','--ycol',default=1,type='int',help='Y column# (%default)')
 parser.add_option('-k','--ecol',default=None,type='int',help='Error column# (%default)')
+parser.add_option('-n','--nrow',default=None,type='int',help='#rows to skip (%default)')
 parser.add_option('-u','--xfac',default=None,type='float',help='X factor (%default)')
 parser.add_option('-v','--yfac',default=None,type='float',help='Y factor (%default)')
 parser.add_option('-A','--xtit',default='X',help='X title (%default)')
@@ -67,7 +68,9 @@ for fnam in args:
         y = []
         e = []
         with open(fnam,'r') as fp:
-            for line in fp:
+            for i,line in enumerate(fp):
+                if opts.nrow is not None and i < opts.nrow:
+                    continue
                 item = line.replace(',',' ').split()
                 if len(item) < 3:
                     continue
@@ -102,7 +105,9 @@ for fnam in args:
         x = []
         y = []
         with open(fnam,'r') as fp:
-            for line in fp:
+            for i,line in enumerate(fp):
+                if opts.nrow is not None and i < opts.nrow:
+                    continue
                 item = line.replace(',',' ').split()
                 if len(item) < 2:
                     continue
