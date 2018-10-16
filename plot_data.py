@@ -18,6 +18,8 @@ WINB = 0.12
 NLOC = 1
 XCOL = 0
 YCOL = 1
+XTIT = 'X'
+YTIT = 'Y'
 LINESTYLE = '-'
 LABEL = 'file_name'
 
@@ -34,8 +36,8 @@ parser.add_option('-k','--ecol',default=None,type='int',action='append',help='Er
 parser.add_option('-n','--nrow',default=None,type='int',action='append',help='#rows to skip (%default)')
 parser.add_option('-u','--xfac',default=None,type='float',action='append',help='X factor (%default)')
 parser.add_option('-v','--yfac',default=None,type='float',action='append',help='Y factor (%default)')
-parser.add_option('-A','--xtit',default='X',action='append',help='X title (%default)')
-parser.add_option('-B','--ytit',default='Y',action='append',help='Y title (%default)')
+parser.add_option('-A','--xtit',default=None,action='append',help='X title ({})'.format(XTIT))
+parser.add_option('-B','--ytit',default=None,action='append',help='Y title ({})'.format(YTIT))
 parser.add_option('-t','--title',default=None,action='append',help='Title (%default)')
 parser.add_option('-T','--subtitle',default=None,action='append',help='Sub title (%default)')
 parser.add_option('--linestyle',default=None,action='append',help='Line style ({})'.format(LINESTYLE))
@@ -68,6 +70,10 @@ if opts.xcol is None:
     opts.xcol = [XCOL]
 if opts.ycol is None:
     opts.ycol = [YCOL]
+if opts.xtit is None:
+    opts.xtit = [XTIT]
+if opts.ytit is None:
+    opts.ytit = [YTIT]
 if opts.linestyle is None:
     opts.linestyle = [LINESTYLE]
 nplot = len(fnams)
