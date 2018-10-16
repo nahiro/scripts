@@ -91,11 +91,11 @@ for i in range(nplot):
         p = getattr(opts,param)
         if p is not None:
             indx = -1 if i >= len(p) else i
-            if isinstance(p[indx],float) and np.isnan(p[indx]):
+            if type(p[indx]) is float and np.isnan(p[indx]):
                 gv[param].append(None)
-            elif isinstance(p[indx],int) and p[indx] < 0:
+            elif type(p[indx]) is int and p[indx] < 0:
                 gv[param].append(None)
-            elif isinstance(p[indx],str) and len(p[indx]) < 1:
+            elif type(p[indx]) is str and len(p[indx]) < 1:
                 gv[param].append(None)
             else:
                 gv[param].append(p[indx])
