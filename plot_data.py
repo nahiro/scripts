@@ -8,6 +8,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from optparse import OptionParser,IndentedHelpFormatter
 
 # Default values
+LINESTYLE = '-'
 WINX = 8.0
 WINY = 6.0
 WINL = 0.12
@@ -17,6 +18,8 @@ WINB = 0.12
 NLOC = 1
 XCOL = 0
 YCOL = 1
+LINESTYLE = '-'
+LABEL = 'file_name'
 
 # Read options
 parser = OptionParser(formatter=IndentedHelpFormatter(max_help_position=200,width=200))
@@ -35,9 +38,11 @@ parser.add_option('-A','--xtit',default='X',action='append',help='X title (%defa
 parser.add_option('-B','--ytit',default='Y',action='append',help='Y title (%default)')
 parser.add_option('-t','--title',default=None,action='append',help='Title (%default)')
 parser.add_option('-T','--subtitle',default=None,action='append',help='Sub title (%default)')
+parser.add_option('--linestyle',default=None,action='append',help='Line style ({})'.format(LINESTYLE))
+parser.add_option('-m','--marker',default=None,action='append',help='Marker (%default)')
+parser.add_option('--label',default=None,action='append',help='Label ({})'.format(LABEL))
 parser.add_option('-F','--fignam',default=None,help='Figure name (%default)')
 parser.add_option('--last_fignam',default=None,help='Last figure name (%default)')
-parser.add_option('-m','--marker',default=None,help='Marker (%default)')
 parser.add_option('-d','--delimiter',default=None,action='append',help='Delimiter (%default)')
 parser.add_option('--winx',default=WINX,type='float',help='Window X size in inch (%default)')
 parser.add_option('--winy',default=WINY,type='float',help='Window Y size in inch (%default)')
@@ -58,9 +63,11 @@ if opts.xcol is None:
     opts.xcol = [XCOL]
 if opts.ycol is None:
     opts.ycol = [YCOL]
+if opts.linestyle is None:
+    opts.linestyle = [LINESTYLE]
 nplot = len(args)
 gv = globals()
-params = ['xcol','ycol','ecol','nrow','xfac','yfac','xtit','ytit','title','subtitle']
+params = ['xcol','ycol','ecol','nrow','xfac','yfac','xtit','ytit','title','subtitle','linestyle','marker','label']
 for param in params:
     p = getattr(opts,param)
     if p is not None:
@@ -82,6 +89,8 @@ for i in range(nplot):
         fs.append(args[-1])
     else:
         fs.append(args[i])
+        if label[i] is None:
+            label[i] = os.path.basename(fs[i])
 
 if not opts.batch:
     plt.interactive(True)
@@ -134,10 +143,16 @@ for i in range(nplot):
             ax1 = plt.subplot(111)
         elif i == 0:
             ax1 = plt.subplot(111)
-        if opts.marker:
-            ax1.errorbar(x,y,e,'-',marker=opts.marker)
+        if opts.legend:
+            if marker[i]:
+                ax1.errorbar(x,y,e,linestyle=linestyle[i],marker=marker[i],label=label[i])
+            else:
+                ax1.errorbar(x,y,e,linestyle=linestyle[i],label=label[i])
         else:
-            ax1.errorbar(x,y,e)
+            if marker[i]:
+                ax1.errorbar(x,y,e,linestyle=linestyle[i],marker=marker[i])
+            else:
+                ax1.errorbar(x,y,e,linestyle=linestyle[i])
     else:
         x = []
         y = []
@@ -173,15 +188,15 @@ for i in range(nplot):
         elif i == 0:
             ax1 = plt.subplot(111)
         if opts.legend:
-            if opts.marker:
-                ax1.plot(x,y,'-',marker=opts.marker,label=os.path.basename(fnam))
+            if marker[i]:
+                ax1.plot(x,y,linestyle=linestyle[i],marker=marker[i],label=label[i])
             else:
-                ax1.plot(x,y,label=os.path.basename(fnam))
+                ax1.plot(x,y,linestyle=linestyle[i],label=label[i])
         else:
-            if opts.marker:
-                ax1.plot(x,y,'-',marker=opts.marker)
+            if marker[i]:
+                ax1.plot(x,y,linestyle=linestyle[i],marker=marker[i])
             else:
-                ax1.plot(x,y)
+                ax1.plot(x,y,linestyle=linestyle[i])
     if opts.logx:
         ax1.set_xscale('log')
     if opts.logy:
