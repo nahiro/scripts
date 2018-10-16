@@ -90,10 +90,15 @@ for i in range(nplot):
     for param in params:
         p = getattr(opts,param)
         if p is not None:
-            if i >= len(p):
-                gv[param].append(p[-1])
+            indx = -1 if i >= len(p) else i
+            if isinstance(p[indx],float) and np.isnan(p[indx]):
+                gv[param].append(None)
+            elif isinstance(p[indx],int) and p[indx] < 0:
+                gv[param].append(None)
+            elif isinstance(p[indx],str) and len(p[indx]) < 1:
+                gv[param].append(None)
             else:
-                gv[param].append(p[i])
+                gv[param].append(p[indx])
         else:
             gv[param].append(None)
     if i >= len(fnams):
