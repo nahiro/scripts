@@ -78,7 +78,7 @@ if opts.linestyle is None:
     opts.linestyle = [LINESTYLE]
 nplot = len(fnams)
 gv = globals()
-params = ['xcol','ycol','ecol','nrow','xfac','yfac','xtit','ytit','title','subtitle','linestyle','marker','label']
+params = ['xmin','xmax','ymin','ymax','xcol','ycol','ecol','nrow','xfac','yfac','xtit','ytit','title','subtitle','linestyle','marker','label']
 for param in params:
     p = getattr(opts,param)
     if p is not None:
@@ -218,14 +218,14 @@ for i in range(nplot):
         ax1.set_title(os.path.basename(fnam),y=1.01,size=14)
     if title[i]:
         plt.suptitle(title[i],y=0.96,size=18)
-    if opts.xmin is not None:
-        ax1.set_xlim(left=opts.xmin)
-    if opts.xmax is not None:
-        ax1.set_xlim(right=opts.xmax)
-    if opts.ymin is not None:
-        ax1.set_ylim(bottom=opts.ymin)
-    if opts.ymax is not None:
-        ax1.set_ylim(top=opts.ymax)
+    if xmin[i] is not None:
+        ax1.set_xlim(left=xmin[i])
+    if xmax[i] is not None:
+        ax1.set_xlim(right=xmax[i])
+    if ymin[i] is not None:
+        ax1.set_ylim(bottom=ymin[i])
+    if ymax[i] is not None:
+        ax1.set_ylim(top=ymax[i])
     ax1.set_xlabel(xtit[i])
     ax1.set_ylabel(ytit[i])
     ax1.xaxis.set_tick_params(pad=7)
