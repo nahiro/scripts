@@ -15,6 +15,8 @@ WINR = 0.90
 WINT = 0.86
 WINB = 0.12
 NLOC = 1
+XCOL = 0
+YCOL = 1
 
 # Read options
 parser = OptionParser(formatter=IndentedHelpFormatter(max_help_position=200,width=200))
@@ -23,16 +25,16 @@ parser.add_option('-x','--xmin',default=None,type='float',help='X min (%default)
 parser.add_option('-X','--xmax',default=None,type='float',help='X max (%default)')
 parser.add_option('-y','--ymin',default=None,type='float',help='Y min (%default)')
 parser.add_option('-Y','--ymax',default=None,type='float',help='Y max (%default)')
-parser.add_option('-i','--xcol',default=0,type='int',help='X column# (%default)')
-parser.add_option('-j','--ycol',default=1,type='int',help='Y column# (%default)')
-parser.add_option('-k','--ecol',default=None,type='int',help='Error column# (%default)')
-parser.add_option('-n','--nrow',default=None,type='int',help='#rows to skip (%default)')
-parser.add_option('-u','--xfac',default=None,type='float',help='X factor (%default)')
-parser.add_option('-v','--yfac',default=None,type='float',help='Y factor (%default)')
-parser.add_option('-A','--xtit',default='X',help='X title (%default)')
-parser.add_option('-B','--ytit',default='Y',help='Y title (%default)')
-parser.add_option('-t','--title',default=None,help='Title (%default)')
-parser.add_option('-T','--subtitle',default=None,help='Sub title (%default)')
+parser.add_option('-i','--xcol',default=None,type='int',action='append',help='X column# ({})'.format(XCOL))
+parser.add_option('-j','--ycol',default=None,type='int',action='append',help='Y column# ({})'.format(YCOL))
+parser.add_option('-k','--ecol',default=None,type='int',action='append',help='Error column# (%default)')
+parser.add_option('-n','--nrow',default=None,type='int',action='append',help='#rows to skip (%default)')
+parser.add_option('-u','--xfac',default=None,type='float',action='append',help='X factor (%default)')
+parser.add_option('-v','--yfac',default=None,type='float',action='append',help='Y factor (%default)')
+parser.add_option('-A','--xtit',default='X',action='append',help='X title (%default)')
+parser.add_option('-B','--ytit',default='Y',action='append',help='Y title (%default)')
+parser.add_option('-t','--title',default=None,action='append',help='Title (%default)')
+parser.add_option('-T','--subtitle',default=None,action='append',help='Sub title (%default)')
 parser.add_option('-F','--fignam',default=None,help='Figure name (%default)')
 parser.add_option('--last_fignam',default=None,help='Last figure name (%default)')
 parser.add_option('-m','--marker',default=None,help='Marker (%default)')
@@ -52,6 +54,34 @@ parser.add_option('-o','--over',default=False,action='store_true',help='Over plo
 parser.add_option('-S','--skip',default=False,action='store_true',help='Skip mode (%default)')
 parser.add_option('-b','--batch',default=False,action='store_true',help='Batch mode (%default)')
 (opts,args) = parser.parse_args()
+if opts.xcol is None:
+    opts.xcol = [XCOL]
+if opts.ycol is None:
+    opts.ycol = [YCOL]
+nplot = len(args)
+gv = globals()
+params = ['xcol','ycol','ecol','nrow','xfac','yfac','xtit','ytit','title','subtitle']
+for param in params:
+    p = getattr(opts,param)
+    if p is not None:
+        if len(p) > nplot:
+            nplot = len(p)
+    gv[param] = []
+fs = []
+for i in range(nplot):
+    for param in params:
+        p = getattr(opts,param)
+        if p is not None:
+            if i >= len(p):
+                gv[param].append(p[-1])
+            else:
+                gv[param].append(p[i])
+        else:
+            gv[param].append(None)
+    if i >= len(args):
+        fs.append(args[-1])
+    else:
+        fs.append(args[i])
 
 if not opts.batch:
     plt.interactive(True)
@@ -63,14 +93,15 @@ plt.subplots_adjust(left=opts.winl,right=opts.winr,top=opts.wint,bottom=opts.win
 if opts.fignam:
     pdf = PdfPages(opts.fignam)
 
-for fnam in args:
-    if opts.ecol is not None:
+for i in range(nplot):
+    fnam = fs[i]
+    if ecol[i] is not None:
         x = []
         y = []
         e = []
         with open(fnam,'r') as fp:
-            for i,line in enumerate(fp):
-                if opts.nrow is not None and i < opts.nrow:
+            for n,line in enumerate(fp):
+                if nrow[i] is not None and n < nrow[i]:
                     continue
                 if opts.delimiter is not None:
                     for c in opts.delimiter:
@@ -78,15 +109,15 @@ for fnam in args:
                 item = line.split()
                 if len(item) < 3:
                     continue
-                if re.search('[^\d\s\.\+\-eE,]',item[opts.xcol]):
+                if re.search('[^\d\s\.\+\-eE,]',item[xcol[i]]):
                     continue
-                if re.search('[^\d\s\.\+\-eE,]',item[opts.ycol]):
+                if re.search('[^\d\s\.\+\-eE,]',item[ycol[i]]):
                     continue
-                if re.search('[^\d\s\.\+\-eE,]',item[opts.ecol]):
+                if re.search('[^\d\s\.\+\-eE,]',item[ecol[i]]):
                     continue
-                x.append(float(item[opts.xcol]))
-                y.append(float(item[opts.ycol]))
-                e.append(float(item[opts.ecol]))
+                x.append(float(item[xcol[i]]))
+                y.append(float(item[ycol[i]]))
+                e.append(float(item[ecol[i]]))
         x = np.array(x)
         y = np.array(y)
         e = np.array(e)
@@ -94,13 +125,15 @@ for fnam in args:
             t = x[:]
             x = np.array(y)
             y = np.array(t)
-        if opts.xfac:
-            x *= opts.xfac
-        if opts.yfac:
-            y *= opts.yfac
+        if xfac[i]:
+            x *= xfac[i]
+        if yfac[i]:
+            y *= yfac[i]
         if not opts.over:
             fig.clear()
-        ax1 = plt.subplot(111)
+            ax1 = plt.subplot(111)
+        elif i == 0:
+            ax1 = plt.subplot(111)
         if opts.marker:
             ax1.errorbar(x,y,e,'-',marker=opts.marker)
         else:
@@ -109,8 +142,8 @@ for fnam in args:
         x = []
         y = []
         with open(fnam,'r') as fp:
-            for i,line in enumerate(fp):
-                if opts.nrow is not None and i < opts.nrow:
+            for n,line in enumerate(fp):
+                if nrow[i] is not None and n < nrow[i]:
                     continue
                 if opts.delimiter is not None:
                     for c in opts.delimiter:
@@ -118,25 +151,27 @@ for fnam in args:
                 item = line.split()
                 if len(item) < 2:
                     continue
-                if re.search('[^\d\s\.\+\-eE,]',item[opts.xcol]):
+                if re.search('[^\d\s\.\+\-eE,]',item[xcol[i]]):
                     continue
-                if re.search('[^\d\s\.\+\-eE,]',item[opts.ycol]):
+                if re.search('[^\d\s\.\+\-eE,]',item[ycol[i]]):
                     continue
-                x.append(float(item[opts.xcol]))
-                y.append(float(item[opts.ycol]))
+                x.append(float(item[xcol[i]]))
+                y.append(float(item[ycol[i]]))
         x = np.array(x)
         y = np.array(y)
         if opts.swap:
             t = x[:]
             x = np.array(y)
             y = np.array(t)
-        if opts.xfac:
-            x *= opts.xfac
-        if opts.yfac:
-            y *= opts.yfac
+        if xfac[i]:
+            x *= xfac[i]
+        if yfac[i]:
+            y *= yfac[i]
         if not opts.over:
             fig.clear()
-        ax1 = plt.subplot(111)
+            ax1 = plt.subplot(111)
+        elif i == 0:
+            ax1 = plt.subplot(111)
         if opts.legend:
             if opts.marker:
                 ax1.plot(x,y,'-',marker=opts.marker,label=os.path.basename(fnam))
@@ -151,12 +186,12 @@ for fnam in args:
         ax1.set_xscale('log')
     if opts.logy:
         ax1.set_yscale('log')
-    if opts.subtitle:
-        ax1.set_title(opts.subtitle,y=1.01,size=14)
+    if subtitle[i]:
+        ax1.set_title(subtitle[i],y=1.01,size=14)
     else:
         ax1.set_title(os.path.basename(fnam),y=1.01,size=14)
-    if opts.title:
-        plt.suptitle(opts.title,y=0.96,size=18)
+    if title[i]:
+        plt.suptitle(title[i],y=0.96,size=18)
     if opts.xmin is not None:
         ax1.set_xlim(left=opts.xmin)
     if opts.xmax is not None:
@@ -165,8 +200,8 @@ for fnam in args:
         ax1.set_ylim(bottom=opts.ymin)
     if opts.ymax is not None:
         ax1.set_ylim(top=opts.ymax)
-    ax1.set_xlabel(opts.xtit)
-    ax1.set_ylabel(opts.ytit)
+    ax1.set_xlabel(xtit[i])
+    ax1.set_ylabel(ytit[i])
     ax1.xaxis.set_tick_params(pad=7)
     ax1.yaxis.set_label_coords(-0.1,0.5)
     ax1.minorticks_on()
@@ -178,7 +213,7 @@ for fnam in args:
     if not opts.batch:
         plt.draw()
         plt.pause(0.1)
-        if not opts.skip:
+        if not opts.skip and i < nplot-1:
             sys.stderr.write('Type \'q\' to quit.\n')
             line = sys.stdin.readline()
             if re.search('q',line):
