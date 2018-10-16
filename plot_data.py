@@ -59,13 +59,18 @@ parser.add_option('-o','--over',default=False,action='store_true',help='Over plo
 parser.add_option('-S','--skip',default=False,action='store_true',help='Skip mode (%default)')
 parser.add_option('-b','--batch',default=False,action='store_true',help='Batch mode (%default)')
 (opts,args) = parser.parse_args()
+if len(args) > 0:
+    fnams = args
+else:
+    parser.print_usage()
+    sys.exit()
 if opts.xcol is None:
     opts.xcol = [XCOL]
 if opts.ycol is None:
     opts.ycol = [YCOL]
 if opts.linestyle is None:
     opts.linestyle = [LINESTYLE]
-nplot = len(args)
+nplot = len(fnams)
 gv = globals()
 params = ['xcol','ycol','ecol','nrow','xfac','yfac','xtit','ytit','title','subtitle','linestyle','marker','label']
 for param in params:
@@ -85,10 +90,10 @@ for i in range(nplot):
                 gv[param].append(p[i])
         else:
             gv[param].append(None)
-    if i >= len(args):
-        fs.append(args[-1])
+    if i >= len(fnams):
+        fs.append(fnams[-1])
     else:
-        fs.append(args[i])
+        fs.append(fnams[i])
         if label[i] is None:
             label[i] = os.path.basename(fs[i])
 
