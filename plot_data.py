@@ -40,8 +40,11 @@ parser.add_option('-A','--xtit',default=None,action='append',help='X title ({})'
 parser.add_option('-B','--ytit',default=None,action='append',help='Y title ({})'.format(YTIT))
 parser.add_option('-t','--title',default=None,action='append',help='Title (%default)')
 parser.add_option('-T','--subtitle',default=None,action='append',help='Sub title (%default)')
-parser.add_option('--linestyle',default=None,action='append',help='Line style ({})'.format(LINESTYLE))
+parser.add_option('--ls',default=None,action='append',help='Line style ({})'.format(LINESTYLE))
+parser.add_option('--lc',default=None,action='append',help='Line color (%default)')
 parser.add_option('-m','--marker',default=None,action='append',help='Marker (%default)')
+parser.add_option('--mfc',default=None,action='append',help='Marker face color (%default)')
+parser.add_option('--mec',default=None,action='append',help='Marker edge color (%default)')
 parser.add_option('--label',default=None,action='append',help='Label ({})'.format(LABEL))
 parser.add_option('-F','--fignam',default=None,help='Figure name (%default)')
 parser.add_option('--last_fignam',default=None,help='Last figure name (%default)')
@@ -74,11 +77,15 @@ if opts.xtit is None:
     opts.xtit = [XTIT]
 if opts.ytit is None:
     opts.ytit = [YTIT]
-if opts.linestyle is None:
-    opts.linestyle = [LINESTYLE]
+if opts.ls is None:
+    opts.ls = [LINESTYLE]
+if opts.lc is not None and opts.mfc is None:
+    opts.mfc = opts.lc
+if opts.mfc is not None and opts.mec is None:
+    opts.mec = opts.mfc
 nplot = len(fnams)
 gv = globals()
-params = ['xmin','xmax','ymin','ymax','xcol','ycol','ecol','nrow','xfac','yfac','xtit','ytit','title','subtitle','linestyle','marker','label']
+params = ['xmin','xmax','ymin','ymax','xcol','ycol','ecol','nrow','xfac','yfac','xtit','ytit','title','subtitle','ls','lc','marker','mfc','mec','label']
 for param in params:
     p = getattr(opts,param)
     if p is not None:
@@ -161,14 +168,14 @@ for i in range(nplot):
             ax1 = plt.subplot(111)
         if opts.legend:
             if marker[i]:
-                ax1.errorbar(x,y,e,linestyle=linestyle[i],marker=marker[i],label=label[i])
+                ax1.errorbar(x,y,e,ls=ls[i],color=lc[i],marker=marker[i],mfc=mfc[i],mec=mec[i],label=label[i])
             else:
-                ax1.errorbar(x,y,e,linestyle=linestyle[i],label=label[i])
+                ax1.errorbar(x,y,e,ls=ls[i],color=lc[i],label=label[i])
         else:
             if marker[i]:
-                ax1.errorbar(x,y,e,linestyle=linestyle[i],marker=marker[i])
+                ax1.errorbar(x,y,e,ls=ls[i],color=lc[i],marker=marker[i],mfc=mfc[i],mec=mec[i])
             else:
-                ax1.errorbar(x,y,e,linestyle=linestyle[i])
+                ax1.errorbar(x,y,e,ls=ls[i],color=lc[i])
     else:
         x = []
         y = []
@@ -205,14 +212,14 @@ for i in range(nplot):
             ax1 = plt.subplot(111)
         if opts.legend:
             if marker[i]:
-                ax1.plot(x,y,linestyle=linestyle[i],marker=marker[i],label=label[i])
+                ax1.plot(x,y,ls=ls[i],color=lc[i],marker=marker[i],mfc=mfc[i],mec=mec[i],label=label[i])
             else:
-                ax1.plot(x,y,linestyle=linestyle[i],label=label[i])
+                ax1.plot(x,y,ls=ls[i],color=lc[i],label=label[i])
         else:
             if marker[i]:
-                ax1.plot(x,y,linestyle=linestyle[i],marker=marker[i])
+                ax1.plot(x,y,ls=ls[i],color=lc[i],marker=marker[i],mfc=mfc[i],mec=mec[i])
             else:
-                ax1.plot(x,y,linestyle=linestyle[i])
+                ax1.plot(x,y,ls=ls[i],color=lc[i])
     if opts.logx:
         ax1.set_xscale('log')
     if opts.logy:
