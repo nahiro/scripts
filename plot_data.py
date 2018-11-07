@@ -22,6 +22,7 @@ XTIT = 'X'
 YTIT = 'Y'
 LINESTYLE = '-'
 LABEL = 'file_name'
+DELIMITER = ','
 
 # Read options
 parser = OptionParser(formatter=IndentedHelpFormatter(max_help_position=200,width=200))
@@ -48,7 +49,7 @@ parser.add_option('--mec',default=None,action='append',help='Marker edge color (
 parser.add_option('--label',default=None,action='append',help='Label ({})'.format(LABEL))
 parser.add_option('-F','--fignam',default=None,help='Figure name (%default)')
 parser.add_option('--last_fignam',default=None,help='Last figure name (%default)')
-parser.add_option('-d','--delimiter',default=None,action='append',help='Delimiter (%default)')
+parser.add_option('-d','--delimiter',default=None,action='append',help='Delimiter ({})'.format(DELIMITER))
 parser.add_option('--winx',default=WINX,type='float',help='Window X size in inch (%default)')
 parser.add_option('--winy',default=WINY,type='float',help='Window Y size in inch (%default)')
 parser.add_option('--winl',default=WINL,type='float',help='Window left (%default)')
@@ -83,6 +84,8 @@ if opts.lc is not None and opts.mfc is None:
     opts.mfc = opts.lc
 if opts.mfc is not None and opts.mec is None:
     opts.mec = opts.mfc
+if opts.delimiter is None:
+    opts.delimiter = [DELIMITER]
 nplot = len(fnams)
 gv = globals()
 params = ['xmin','xmax','ymin','ymax','xcol','ycol','ecol','nrow','xfac','yfac','xtit','ytit','title','subtitle','ls','lc','marker','mfc','mec','label']
