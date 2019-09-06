@@ -27,7 +27,7 @@ parser.add_option('-d','--move_different',default=False,action='store_true',help
 parser.add_option('-D','--copy_different',default=False,action='store_true',help='Copy different files to destination_directory (%default)')
 parser.add_option('-m','--move_missing',default=False,action='store_true',help='Move missing files to destination_directory (%default)')
 parser.add_option('-M','--copy_missing',default=False,action='store_true',help='Copy missing files to destination_directory (%default)')
-parser.add_option('-r','--remove_same',default=False,action='store_true',help='Remove same files (%default)')
+parser.add_option('-r','--remove_same',default=False,action='store_true',help='Remove same files in source_directory (%default)')
 parser.add_option('-n','--dry_run',default=False,action='store_true',help='Perform a trial run with no changes made (%default)')
 parser.add_option('-q','--quiet',default=False,action='store_true',help='Quiet mode (%default)')
 (opts,args) = parser.parse_args()

@@ -21,7 +21,7 @@ parser.add_option('-s','--srcdir',default=SRCDIR,help='Set source_directory (%de
 parser.add_option('--dstdir',default=None,help='Set destination_directory (%default)')
 parser.add_option('-d','--move_different',default=False,action='store_true',help='Move different files to destination_directory (%default)')
 parser.add_option('-m','--move_missing',default=False,action='store_true',help='Move missing files to destination_directory (%default)')
-parser.add_option('-r','--remove_same',default=False,action='store_true',help='Remove same files (%default)')
+parser.add_option('-r','--remove_same',default=False,action='store_true',help='Remove same files in source_directory (%default)')
 parser.add_option('-q','--quiet',default=False,action='store_true',help='Quiet mode (%default)')
 (opts,args) = parser.parse_args()
 if opts.dstdir is None:
