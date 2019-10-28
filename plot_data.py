@@ -2,6 +2,7 @@
 import os
 import sys
 import re
+from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -23,6 +24,8 @@ YTIT = 'Y'
 LINESTYLE = '-'
 LABEL = 'file_name'
 DELIMITER = ','
+FTIME = '%Y%m%d'
+TIME_DELIMITER = '-'
 
 # Read options
 parser = OptionParser(formatter=IndentedHelpFormatter(max_help_position=200,width=200))
@@ -34,6 +37,7 @@ parser.add_option('-Y','--ymax',default=None,type='float',action='append',help='
 parser.add_option('-i','--xcol',default=None,type='int',action='append',help='X column# ({})'.format(XCOL))
 parser.add_option('-j','--ycol',default=None,type='int',action='append',help='Y column# ({})'.format(YCOL))
 parser.add_option('-k','--ecol',default=None,type='int',action='append',help='Error column# (%default)')
+parser.add_option('--tcol',default=None,type='int',action='append',help='Max time column# (%default)')
 parser.add_option('-n','--nrow',default=None,type='int',action='append',help='#rows to skip (%default)')
 parser.add_option('-u','--xfac',default=None,type='float',action='append',help='X factor (%default)')
 parser.add_option('-v','--yfac',default=None,type='float',action='append',help='Y factor (%default)')
@@ -41,6 +45,8 @@ parser.add_option('-A','--xtit',default=None,action='append',help='X title ({})'
 parser.add_option('-B','--ytit',default=None,action='append',help='Y title ({})'.format(YTIT))
 parser.add_option('-t','--title',default=None,action='append',help='Title (%default)')
 parser.add_option('-T','--subtitle',default=None,action='append',help='Sub title (%default)')
+parser.add_option('--ftime',default=None,action='append',help='Time format ({})'.format(FTIME))
+parser.add_option('--dtime',default=None,action='append',help='Time delimiter ({})'.format(TIME_DELIMITER))
 parser.add_option('--lst',default=None,action='append',help='Line style ({})'.format(LINESTYLE))
 parser.add_option('--lc',default=None,action='append',help='Line color (%default)')
 parser.add_option('-m','--marker',default=None,action='append',help='Marker (%default)')
@@ -78,6 +84,10 @@ if opts.xtit is None:
     opts.xtit = [XTIT]
 if opts.ytit is None:
     opts.ytit = [YTIT]
+if opts.ftime is None:
+    opts.ftime = [FTIME]
+if opts.dtime is None:
+    opts.dtime = [TIME_DELIMITER]
 if opts.lst is None:
     opts.lst = [LINESTYLE]
 if opts.lc is not None and opts.mfc is None:
@@ -88,7 +98,7 @@ if opts.delimiter is None:
     opts.delimiter = [DELIMITER]
 nplot = len(fnams)
 gv = globals()
-params = ['xmin','xmax','ymin','ymax','xcol','ycol','ecol','nrow','xfac','yfac','xtit','ytit','title','subtitle','lst','lc','marker','mfc','mec','label']
+params = ['xmin','xmax','ymin','ymax','xcol','ycol','ecol','tcol','nrow','xfac','yfac','xtit','ytit','title','subtitle','ftime','dtime','lst','lc','marker','mfc','mec','label']
 for param in params:
     p = getattr(opts,param)
     if p is not None:
@@ -144,13 +154,17 @@ for i in range(nplot):
                 item = line.split()
                 if len(item) < 3:
                     continue
-                if re.search('[^\d\s\.\+\-eE,]',item[xcol[i]]):
+                if tcol[i] is None and re.search('[^\d\s\.\+\-eE,]',item[xcol[i]]):
                     continue
                 if re.search('[^\d\s\.\+\-eE,]',item[ycol[i]]):
                     continue
                 if re.search('[^\d\s\.\+\-eE,]',item[ecol[i]]):
                     continue
-                x.append(float(item[xcol[i]]))
+                if tcol[i] is None:
+                    x.append(float(item[xcol[i]]))
+                else:
+                    tstr = dtime[i].join(item[xcol[i]:tcol[i]+1])
+                    x.append(datetime.strptime(tstr,ftime[i]))
                 y.append(float(item[ycol[i]]))
                 e.append(float(item[ecol[i]]))
         x = np.array(x)
@@ -192,11 +206,15 @@ for i in range(nplot):
                 item = line.split()
                 if len(item) < 2:
                     continue
-                if re.search('[^\d\s\.\+\-eE,]',item[xcol[i]]):
+                if tcol[i] is None and re.search('[^\d\s\.\+\-eE,]',item[xcol[i]]):
                     continue
                 if re.search('[^\d\s\.\+\-eE,]',item[ycol[i]]):
                     continue
-                x.append(float(item[xcol[i]]))
+                if tcol[i] is None:
+                    x.append(float(item[xcol[i]]))
+                else:
+                    tstr = dtime[i].join(item[xcol[i]:tcol[i]+1])
+                    x.append(datetime.strptime(tstr,ftime[i]))
                 y.append(float(item[ycol[i]]))
         x = np.array(x)
         y = np.array(y)
@@ -247,6 +265,9 @@ for i in range(nplot):
     ax1.yaxis.set_label_coords(-0.1,0.5)
     ax1.minorticks_on()
     ax1.grid(True)
+    if tcol[i] is not None:
+        ax1.xaxis.set_tick_params(which='minor',bottom=False)
+        fig.autofmt_xdate()
     if opts.legend:
         ax1.legend(loc=opts.nloc,frameon=False)
     if opts.fignam:
