@@ -61,15 +61,15 @@ def move_file(src,dst,quiet=False):
     if os.path.exists(dst):
         if quiet:
             os.remove(dst)
-            os.rename(src,dst)
+            shutil.move(src,dst)
         else:
             sys.stderr.write('Overwrite %s?\n'%(dst))
             line = sys.stdin.readline()
             if re.search('[yY]',line):
                 os.remove(dst)
-                os.rename(src,dst)
+                shutil.move(src,dst)
     else:
-        os.rename(src,dst)
+        shutil.move(src,dst)
 
 def copy_file(src,dst,quiet=False,directory=False):
     if os.path.exists(dst):
