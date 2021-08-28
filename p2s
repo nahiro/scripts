@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+import os
+import sys
+from subprocess import call
+from optparse import OptionParser,IndentedHelpFormatter
+
+PERCENT_RETAIN = 0.0
+ABSOLUTE_OFFSET = -2.0
+OUTDIR = os.curdir
+
+# Read options
+parser = OptionParser(formatter=IndentedHelpFormatter(max_help_position=200,width=200))
+parser.set_usage('Usage: %prog list_of_input_files [options]')
+parser.add_option('-p','--percent_retain',default=PERCENT_RETAIN,type='float',help='Percent of margin space (%default)')
+parser.add_option('-a','--absolute_offset',default=ABSOLUTE_OFFSET,type='float',help='Absolute offset in big point (%default)')
+parser.add_option('-o','--outdir',default=OUT_DIR,help='Output directory (%default)')
+(opts,args) = parser.parse_args()
+if len(args) < 1:
+    parser.print_help()
+    sys.exit(0)
+else:
+    fnams = args
+
+for fnam in fnams:
+    bnam,enam = os.path.splitext(fnam)
+    if enam.lower(enam) != '.pdf':
+        sys.stderr.write('Warning, not a pdf >>> {}'.format(fnam))
+        continue
+    gnam = bnam+'_cropped.pdf'
+    command = 'pdf-crop-margins'
+    command += ' -p {}'.format(opts.percent_retain)
+    command += ' -a {}'.format(opts.absolute_offset)
+    command += ' {}'.format(fnam)
+    call(command,shell=True)
+    if not os.path.exists(gnam):
+        continue
+    command = 'pdf2svg'
+    command += ' {}'.format(gnam)
+    command += ' {}'.format(os.path.join(opts.outdir,os.path.basename(bnam)+'.svg'))
+    call(command,shell=True)
+    os.remove(gnam)
