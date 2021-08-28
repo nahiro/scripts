@@ -1,18 +1,22 @@
 #!/usr/bin/env python
 import os
 import sys
-from subprocess import call
+import re
+from subprocess import call,check_output
 from optparse import OptionParser,IndentedHelpFormatter
 
 PERCENT_RETAIN = 0.0
 ABSOLUTE_OFFSET = -2.0
 OUTDIR = os.curdir
+PAGE_FORMAT = ':06d'
 
 # Read options
 parser = OptionParser(formatter=IndentedHelpFormatter(max_help_position=200,width=200))
 parser.set_usage('Usage: %prog list_of_input_files [options]')
 parser.add_option('-p','--percent_retain',default=PERCENT_RETAIN,type='float',help='Percent of margin space (%default)')
 parser.add_option('-a','--absolute_offset',default=ABSOLUTE_OFFSET,type='float',help='Absolute offset in big point (%default)')
+parser.add_option('-P','--page',default=None,type='int',help='Page number (%default)')
+parser.add_option('-f','--page_format',default=PAGE_FORMAT,help='Page format (%default)')
 parser.add_option('-o','--outdir',default=OUTDIR,help='Output directory (%default)')
 (opts,args) = parser.parse_args()
 if len(args) < 1:
@@ -22,20 +26,47 @@ else:
     fnams = args
 
 for fnam in fnams:
-    bnam,enam = os.path.splitext(fnam)
+    hnam,enam = os.path.splitext(fnam)
+    bnam = os.path.basename(hnam)
     if enam.lower() != '.pdf':
         sys.stderr.write('Warning, not a pdf >>> {}'.format(fnam))
         continue
-    gnam = bnam+'_cropped.pdf'
+    command = 'pdfinfo'
+    command += ' '+fnam
+    out = check_output(command,shell=True).decode()
+    npage = None
+    for line in out.splitlines():
+        #'Pages:          9',
+        m = re.search('Pages\s*:\s*(\d+)',line)
+        if m:
+            npage = int(m.group(1))
+    if npage is None:
+        raise ValueError('Error in finding Pages >>> '+fnam)
+    gnam = os.path.join(opts.outdir,bnam+'_cropped.pdf')
     command = 'pdf-crop-margins'
     command += ' -p {}'.format(opts.percent_retain)
     command += ' -a {}'.format(opts.absolute_offset)
+    command += ' --outfile {}'.format(gnam)
     command += ' {}'.format(fnam)
     call(command,shell=True)
     if not os.path.exists(gnam):
         continue
     command = 'pdf2svg'
     command += ' {}'.format(gnam)
-    command += ' {}'.format(os.path.join(opts.outdir,os.path.basename(bnam)+'.svg'))
-    call(command,shell=True)
+    if npage == 1:
+        command += ' {}'.format(os.path.join(opts.outdir,bnam+'.svg'))
+        call(command,shell=True)
+    elif opts.page is not None:
+        if opts.page < 1 or opts.page > npage:
+            sys.stderr.write('Error, opts.page={}, npage={}\n'.format(opts.page,npage))
+            opts.page = 1
+        command += ' {}'.format(os.path.join(opts.outdir,bnam+'.svg'))
+        command += ' {}'.format(opts.page)
+        call(command,shell=True)
+    else:
+        for i in range(npage):
+            command_i = command
+            command_i += ' {}'.format(os.path.join(opts.outdir,bnam+('_{'+opts.page_format+'}.svg').format(i+1)))
+            command_i += ' {}'.format(i+1)
+            call(command_i,shell=True)
     os.remove(gnam)
