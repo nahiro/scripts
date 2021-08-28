@@ -13,7 +13,7 @@ parser = OptionParser(formatter=IndentedHelpFormatter(max_help_position=200,widt
 parser.set_usage('Usage: %prog list_of_input_files [options]')
 parser.add_option('-p','--percent_retain',default=PERCENT_RETAIN,type='float',help='Percent of margin space (%default)')
 parser.add_option('-a','--absolute_offset',default=ABSOLUTE_OFFSET,type='float',help='Absolute offset in big point (%default)')
-parser.add_option('-o','--outdir',default=OUT_DIR,help='Output directory (%default)')
+parser.add_option('-o','--outdir',default=OUTDIR,help='Output directory (%default)')
 (opts,args) = parser.parse_args()
 if len(args) < 1:
     parser.print_help()
@@ -23,7 +23,7 @@ else:
 
 for fnam in fnams:
     bnam,enam = os.path.splitext(fnam)
-    if enam.lower(enam) != '.pdf':
+    if enam.lower() != '.pdf':
         sys.stderr.write('Warning, not a pdf >>> {}'.format(fnam))
         continue
     gnam = bnam+'_cropped.pdf'
