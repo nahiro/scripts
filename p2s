@@ -18,6 +18,7 @@ parser.add_option('-a','--absolute_offset',default=ABSOLUTE_OFFSET,type='float',
 parser.add_option('-P','--page',default=None,type='int',help='Page number (%default)')
 parser.add_option('-f','--page_format',default=PAGE_FORMAT,help='Page format (%default)')
 parser.add_option('-o','--outdir',default=OUTDIR,help='Output directory (%default)')
+parser.add_option('-c','--crop_only',default=False,action='store_true',help='Crop mode (%default)')
 (opts,args) = parser.parse_args()
 if len(args) < 1:
     parser.print_help()
@@ -49,7 +50,9 @@ for fnam in fnams:
     command += ' --outfile {}'.format(gnam)
     command += ' {}'.format(fnam)
     call(command,shell=True)
-    if not os.path.exists(gnam):
+    if opts.crop_only:
+        continue
+    elif not os.path.exists(gnam):
         continue
     command = 'pdf2svg'
     command += ' {}'.format(gnam)
