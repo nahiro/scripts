@@ -13,6 +13,7 @@ for f in sorted(os.listdir(datdir)):
         continue
     dstr = m.group(1)
     dtim = datetime.strptime(dstr,'%Y%m%d')
+    dtit = dtim.strftime('%Y/%m/%d')
     fnam = os.path.join(datdir,f)
     command = 'pdfinfo'
     command += ' '+fnam
@@ -31,9 +32,16 @@ for f in sorted(os.listdir(datdir)):
     out = check_output(command,shell=True).decode()
     nmin = -100
     subject = []
-    for line in out.splitlines():
-        m = re.search('^\s*(\d+)\.\s\s*(\S.*)$',line)
+    lines = out.splitlines()
+    for line in lines:
+        m = re.search('^\s*(\d+)[\-\d]*\.\s\s*(\S.*)$',line)
         if not m:
+            if len(subject) > 0:
+                if re.search(dtit,line):
+                    break
+                if re.search('^\s*\S+',line):
+                    #sys.stderr.write('additional subject ...'+line+'\n')
+                    subject[-1] += line
             continue
         n = int(m.group(1))
         if n <= nmin:
@@ -43,7 +51,7 @@ for f in sorted(os.listdir(datdir)):
         #print(line)
     title = '/'.join(subject)
     sys.stdout.write('BookmarkBegin\n')
-    sys.stdout.write('BookmarkTitle: {:%Y/%m/%d} ({})\n'.format(dtim,title))
+    sys.stdout.write('BookmarkTitle: {} ({})\n'.format(dtit,title))
     sys.stdout.write('BookmarkLevel: 1\n')
     sys.stdout.write('BookmarkPageNumber: {}\n'.format(start))
     sys.stdout.write('\n')
