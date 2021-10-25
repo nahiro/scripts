@@ -26,8 +26,8 @@ for f in sorted(os.listdir(datdir)):
     if npage is None:
         raise ValueError('Error in finding Pages >>> '+fnam)
     command = 'pdf2txt'
-    command += ' '+fnam
     command += ' -p 1'
+    command += ' '+fnam
     out = check_output(command,shell=True).decode()
     nmin = -100
     subject = []
