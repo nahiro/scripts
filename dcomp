@@ -151,7 +151,10 @@ for line in lines:
         srcdir = opts.srcdir+m.group(1)
         dstdir = opts.dstdir+m.group(1)
         continue
-    m = re.search('Only\s+in\s+%s\s*:\s*(\[.*\])'%(srcdir),line)
+    if '(' in srcdir or ')' in srcdir:
+        m = re.search(u'Only\s+in\s+%s\s*:\s*(\[.*\])'%(srcdir.replace('(','\(').replace(')','\)')),line)
+    else:
+        m = re.search(u'Only\s+in\s+%s\s*:\s*(\[.*\])'%(srcdir),line)
     if m:
         files = eval(m.group(1))
         for f in files:
@@ -170,7 +173,10 @@ for line in lines:
                     move_list.append((fnam,gnam))
             nmis += 1
         continue
-    m = re.search('Only\s+in\s+%s'%(dstdir),line)
+    if '(' in dstdir or ')' in dstdir:
+        m = re.search(u'Only\s+in\s+%s'%(dstdir.replace('(','\(').replace(')','\)')),line)
+    else:
+        m = re.search(u'Only\s+in\s+%s'%(dstdir),line)
     if m: # Do nothing
         continue
     m = re.search('Identical\s+files\s*:\s*(\[.*\])',line)
