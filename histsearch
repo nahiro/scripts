@@ -1,5 +1,4 @@
 #!/bin/bash
-BINDIR=/home/sskgrp/bin
 OFFSET=900
 
 if [ $# -gt 1 ] ; then
