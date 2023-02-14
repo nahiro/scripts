@@ -1,0 +1,33 @@
+#!/bin/bash
+BINDIR=/home/sskgrp/bin
+OFFSET=900
+
+if [ $# -gt 1 ] ; then
+  TEST=`echo $2 | grep -s "[^0-9+-]"`
+  if [ "${TEST}" = "" ] ; then
+    OFFSET=$2
+  fi
+fi
+
+if [ $# -lt 1 ] || [ "$1" == "*" ] ; then
+
+  cat ${HOME}/.zsh_history | \
+  while read DUM COMMAND ARGS ; do
+    STMP=${COMMAND%%:*}
+    PROG=${COMMAND##*;}
+    TIME=`gettime -m -O ${OFFSET} ${STMP}`
+    echo ${TIME//[(|)]/} ${PROG} "${ARGS}"
+  done
+
+else
+
+  WORD=$1
+  grep -s $1 ${HOME}/.zsh_history | \
+  while read DUM COMMAND ARGS ; do
+    STMP=${COMMAND%%:*}
+    PROG=${COMMAND##*;}
+    TIME=`gettime -m -O ${OFFSET} ${STMP}`
+    echo ${TIME//[(|)]/} ${PROG} "${ARGS}"
+  done
+
+fi
