@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [ -d .svn ] ; then
+  echo "SVN" >&2
+  svn diff --diff-cmd diff -x "-U 0 --ignore-space-change"
+elif [ -d .git ] ; then
+  echo "GIT" >&2
+  git diff -U0 --ignore-space-change
+else
+  echo "Neither .svn nor .git"
+fi
