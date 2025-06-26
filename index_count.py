@@ -16,4 +16,4 @@ for i,line in enumerate(lines):
     if(not m):
         continue
     index = m.group(1)
-    print(f'{i:8d} {len(index)}')
+    print(f'{i+1:8d} {len(index)}')
