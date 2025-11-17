@@ -13,41 +13,40 @@ try:
     from StringIO import StringIO
 except ImportError:
     from io import StringIO
-from optparse import OptionParser,IndentedHelpFormatter
+from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Default values
 SRCDIR = '.'
 
 # Read options
-parser = OptionParser(formatter=IndentedHelpFormatter(max_help_position=200,width=200))
-parser.set_usage('Usage: %prog destination_directory [options]')
-parser.add_option('-s','--srcdir',default=SRCDIR,help='Set source_directory (%default)')
-parser.add_option('--dstdir',default=None,help='Set destination_directory (%default)')
-parser.add_option('-d','--move_different',default=False,action='store_true',help='Move different files to destination_directory (%default)')
-parser.add_option('-D','--copy_different',default=False,action='store_true',help='Copy different files to destination_directory (%default)')
-parser.add_option('-m','--move_missing',default=False,action='store_true',help='Move missing files to destination_directory (%default)')
-parser.add_option('-M','--copy_missing',default=False,action='store_true',help='Copy missing files to destination_directory (%default)')
-parser.add_option('-r','--remove_same',default=False,action='store_true',help='Remove same files in source_directory (%default)')
-parser.add_option('-S','--size_only',default=False,action='store_true',help='Check size only (%default)')
-parser.add_option('-n','--dry_run',default=False,action='store_true',help='Perform a trial run with no changes made (%default)')
-parser.add_option('-q','--quiet',default=False,action='store_true',help='Quiet mode (%default)')
-(opts,args) = parser.parse_args()
-if opts.dstdir is None:
-    if len(args) != 1:
+parser = ArgumentParser(usage='%(prog)s destination_directory [options]',formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
+parser.add_argument('-s','--srcdir',default=SRCDIR,help='Set source_directory (%(default)s)')
+parser.add_argument('--dstdir',default=None,help='Set destination_directory (%(default)s)')
+parser.add_argument('-d','--move_different',default=False,action='store_true',help='Move different files to destination_directory (%(default)s)')
+parser.add_argument('-D','--copy_different',default=False,action='store_true',help='Copy different files to destination_directory (%(default)s)')
+parser.add_argument('-m','--move_missing',default=False,action='store_true',help='Move missing files to destination_directory (%(default)s)')
+parser.add_argument('-M','--copy_missing',default=False,action='store_true',help='Copy missing files to destination_directory (%(default)s)')
+parser.add_argument('-r','--remove_same',default=False,action='store_true',help='Remove same files in source_directory (%(default)s)')
+parser.add_argument('-S','--size_only',default=False,action='store_true',help='Check size only (%(default)s)')
+parser.add_argument('-n','--dry_run',default=False,action='store_true',help='Perform a trial run with no changes made (%(default)s)')
+parser.add_argument('-q','--quiet',default=False,action='store_true',help='Quiet mode (%(default)s)')
+(args,rest) = parser.parse_known_args()
+if args.dstdir is None:
+    if len(rest) != 1:
         parser.print_help()
         sys.exit(-1)
     else:
-        opts.dstdir = args[0]
-if not os.path.isdir(opts.dstdir):
-    raise IOError('No such directory >>> '+opts.dstdir)
+        args.dstdir = rest[0]
+if not os.path.isdir(args.dstdir):
+    raise IOError('No such directory >>> '+args.dstdir)
 else:
-    opts.dstdir = opts.dstdir.rstrip(os.path.sep) # to remove trailing '/'
-if not os.path.isdir(opts.srcdir):
-    raise IOError('No such directory >>> '+opts.srcdir)
+    args.dstdir = args.dstdir.rstrip(os.path.sep) # to remove trailing '/'
+if not os.path.isdir(args.srcdir):
+    raise IOError('No such directory >>> '+args.srcdir)
 else:
-    opts.srcdir = opts.srcdir.rstrip(os.path.sep) # to remove trailing '/'
-srcdir = os.path.abspath(opts.srcdir)
-dstdir = os.path.abspath(opts.dstdir)
+    args.srcdir = args.srcdir.rstrip(os.path.sep) # to remove trailing '/'
+srcdir = os.path.abspath(args.srcdir)
+dstdir = os.path.abspath(args.dstdir)
 
 def is_subdir(path,directory):
     path = os.path.realpath(path)
@@ -134,7 +133,7 @@ nmis = 0
 ndif = 0
 old_stdout = sys.stdout
 sys.stdout = mystdout = StringIO()
-filecmp.dircmp(opts.srcdir,opts.dstdir,ignore=[]).report_full_closure()
+filecmp.dircmp(args.srcdir,args.dstdir,ignore=[]).report_full_closure()
 sys.stdout = old_stdout
 lines = mystdout.getvalue().splitlines()
 dirs = []
@@ -146,10 +145,10 @@ for line in lines:
         srcdir = None
         dstdir = None
         continue
-    m = re.search(r'diff\s+%s(.*)\s+%s\1$'%(opts.srcdir,opts.dstdir),line)
+    m = re.search(r'diff\s+%s(.*)\s+%s\1$'%(args.srcdir,args.dstdir),line)
     if m:
-        srcdir = opts.srcdir+m.group(1)
-        dstdir = opts.dstdir+m.group(1)
+        srcdir = args.srcdir+m.group(1)
+        dstdir = args.dstdir+m.group(1)
         continue
     if '(' in srcdir or ')' in srcdir:
         m = re.search(u'Only\s+in\s+%s\s*:\s*(\[.*\])'%(srcdir.replace('(','\(').replace(')','\)')),line)
@@ -161,12 +160,12 @@ for line in lines:
             fnam = os.path.join(srcdir,f)
             gnam = os.path.join(dstdir,f)
             sys.stderr.write('M %s\n'%(gnam))
-            if opts.copy_missing:
+            if args.copy_missing:
                 if os.path.exists(gnam):
                     raise IOError('Error, already exists %s'%(gnam))
                 else:
                     copy_list.append((fnam,gnam,True))
-            elif opts.move_missing:
+            elif args.move_missing:
                 if os.path.exists(gnam):
                     raise IOError('Error, already exists %s'%(gnam))
                 else:
@@ -192,29 +191,29 @@ for line in lines:
                     test = False
             elif os.path.islink(gnam):
                 test = False
-            elif opts.size_only:
+            elif args.size_only:
                 test = (os.path.getsize(fnam) == os.path.getsize(gnam))
             else:
                 test = filecmp.cmp(fnam,gnam,shallow=False)
             if not test:
                 sys.stderr.write('D %s %s\n'%(fnam,gnam))
-                if opts.copy_different:
+                if args.copy_different:
                     copy_list.append((fnam,gnam,False))
-                elif opts.move_different:
+                elif args.move_different:
                     move_list.append((fnam,gnam))
                 ndif += 1
             else:
                 if os.path.realpath(fnam) == os.path.realpath(gnam):
-                    if not opts.quiet:
+                    if not args.quiet:
                         sys.stderr.write('SI %s\n'%(fnam))
                 else:
                     if os.path.dirname(os.path.realpath(fnam)) != os.path.abspath(os.path.dirname(fnam)): # inside a link
-                        if not opts.quiet:
+                        if not args.quiet:
                             sys.stderr.write('SL %s\n'%(fnam))
                     else:
-                        if not opts.quiet:
+                        if not args.quiet:
                             sys.stderr.write('S %s\n'%(fnam))
-                        if opts.remove_same:
+                        if args.remove_same:
                             remove_list.append(fnam)
                 nsam += 1
         continue
@@ -225,9 +224,9 @@ for line in lines:
             fnam = os.path.join(srcdir,f)
             gnam = os.path.join(dstdir,f)
             sys.stderr.write('D %s %s\n'%(fnam,gnam))
-            if opts.copy_different:
+            if args.copy_different:
                 copy_list.append((fnam,gnam,False))
-            elif opts.move_different:
+            elif args.move_different:
                 move_list.append((fnam,gnam))
             ndif += 1
         continue
@@ -249,29 +248,29 @@ for line in lines:
                     test = False
             elif os.path.islink(gnam):
                 test = False
-            elif opts.size_only:
+            elif args.size_only:
                 test = (os.path.getsize(fnam) == os.path.getsize(gnam))
             else:
                 test = filecmp.cmp(fnam,gnam,shallow=False)
             if not test:
                 sys.stderr.write('D %s %s\n'%(fnam,gnam))
-                if opts.copy_different:
+                if args.copy_different:
                     copy_list.append((fnam,gnam,False))
-                elif opts.move_different:
+                elif args.move_different:
                     move_list.append((fnam,gnam))
                 ndif += 1
             else:
                 if os.path.realpath(fnam) == os.path.realpath(gnam):
-                    if not opts.quiet:
+                    if not args.quiet:
                         sys.stderr.write('SI %s\n'%(fnam))
                 else:
                     if os.path.dirname(os.path.realpath(fnam)) != os.path.abspath(os.path.dirname(fnam)): # inside a link
-                        if not opts.quiet:
+                        if not args.quiet:
                             sys.stderr.write('SL %s\n'%(fnam))
                     else:
-                        if not opts.quiet:
+                        if not args.quiet:
                             sys.stderr.write('S %s\n'%(fnam))
-                        if opts.remove_same:
+                        if args.remove_same:
                             remove_list.append(fnam)
                 nsam += 1
         continue
@@ -281,33 +280,33 @@ ncop = 0
 nmov = 0
 nrem = 0
 for fnam,gnam,flag in copy_list:
-    if opts.dry_run:
+    if args.dry_run:
         sys.stderr.write('cp %s %s\n'%(fnam,gnam))
     else:
-        copy_file(fnam,gnam,opts.quiet,directory=flag)
+        copy_file(fnam,gnam,args.quiet,directory=flag)
         if os.path.exists(gnam):
             ncop += 1
 for fnam,gnam in move_list:
-    if opts.dry_run:
+    if args.dry_run:
         sys.stderr.write('mv %s %s\n'%(fnam,gnam))
     else:
-        move_file(fnam,gnam,opts.quiet)
+        move_file(fnam,gnam,args.quiet)
         if not os.path.exists(fnam) and os.path.exists(gnam):
             nmov += 1
 for fnam in remove_list:
-    if opts.dry_run:
+    if args.dry_run:
         sys.stderr.write('rm %s\n'%(fnam))
     else:
-        remove_file(fnam,opts.quiet)
+        remove_file(fnam,args.quiet)
         if not os.path.exists(fnam):
             nrem += 1
-if opts.remove_same:
+if args.remove_same:
     for d in dirs:
-        if opts.dry_run:
+        if args.dry_run:
             sys.stderr.write('rmdir %s\n'%(d))
         else:
             try:
-                if opts.quiet:
+                if args.quiet:
                     os.removedirs(d)
                 else:
                     sys.stderr.write('Remove %s?\n'%(d))
