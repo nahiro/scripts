@@ -63,7 +63,7 @@ def move_file(src,dst,quiet=False):
             os.remove(dst)
             shutil.move(src,dst)
         else:
-            sys.stderr.write('Overwrite %s?\n'%(dst))
+            sys.stderr.write(f'Overwrite {dst}?\n')
             line = sys.stdin.readline()
             if re.search('[yY]',line):
                 os.remove(dst)
@@ -76,7 +76,7 @@ def copy_file(src,dst,quiet=False,directory=False):
         if quiet:
             if os.path.isdir(src):
                 if not directory:
-                    raise IOError('Error, %s is a directory.'%(src))
+                    raise IOError(f'Error, {src} is a directory.')
                 os.removedirs(dst)
                 shutil.copytree(src,dst,symlinks=True)
             else:
@@ -87,12 +87,12 @@ def copy_file(src,dst,quiet=False,directory=False):
                 else:
                     shutil.copy2(src,dst)
         else:
-            sys.stderr.write('Overwrite %s?\n'%(dst))
+            sys.stderr.write(f'Overwrite {dst}?\n')
             line = sys.stdin.readline()
             if re.search('[yY]',line):
                 if os.path.isdir(src):
                     if not directory:
-                        raise IOError('Error, %s is a directory.'%(src))
+                        raise IOError(f'Error, {src} is a directory.')
                     os.removedirs(dst)
                     shutil.copytree(src,dst,symlinks=True)
                 else:
@@ -105,7 +105,7 @@ def copy_file(src,dst,quiet=False,directory=False):
     else:
         if os.path.isdir(src):
             if not directory:
-                raise IOError('Error, %s is a directory.'%(src))
+                raise IOError(f'Error, {src} is a directory.')
             shutil.copytree(src,dst,symlinks=True)
         else:
             if os.path.islink(src):
@@ -118,7 +118,7 @@ def remove_file(src,quiet=False):
     if quiet:
         os.remove(src)
     else:
-        sys.stderr.write('Remove %s?\n'%(src))
+        sys.stderr.write(f'Remove {src}?\n')
         line = sys.stdin.readline()
         if re.search('[yY]',line):
             os.remove(src)
@@ -141,11 +141,11 @@ copy_list = []
 move_list = []
 remove_list = []
 for line in lines:
-    if not re.search('\S',line):
+    if not re.search(r'\S',line):
         srcdir = None
         dstdir = None
         continue
-    m = re.search(r'diff\s+%s(.*)\s+%s\1$'%(args.srcdir,args.dstdir),line)
+    m = re.search(rf'diff\s+{args.srcdir}(.*)\s+{args.dstdir}\1$',line)
     if m:
         srcdir = args.srcdir+m.group(1)
         dstdir = args.dstdir+m.group(1)
@@ -162,12 +162,12 @@ for line in lines:
             sys.stderr.write('M %s\n'%(gnam))
             if args.copy_missing:
                 if os.path.exists(gnam):
-                    raise IOError('Error, already exists %s'%(gnam))
+                    raise IOError(f'Error, already exists {gnam}')
                 else:
                     copy_list.append((fnam,gnam,True))
             elif args.move_missing:
                 if os.path.exists(gnam):
-                    raise IOError('Error, already exists %s'%(gnam))
+                    raise IOError(f'Error, already exists {gnam}')
                 else:
                     move_list.append((fnam,gnam))
             nmis += 1
@@ -178,7 +178,7 @@ for line in lines:
         m = re.search(u'Only\s+in\s+%s'%(dstdir),line)
     if m: # Do nothing
         continue
-    m = re.search('Identical\s+files\s*:\s*(\[.*\])',line)
+    m = re.search(r'Identical\s+files\s*:\s*(\[.*\])',line)
     if m:
         files = eval(m.group(1))
         for f in files:
@@ -196,7 +196,7 @@ for line in lines:
             else:
                 test = filecmp.cmp(fnam,gnam,shallow=False)
             if not test:
-                sys.stderr.write('D %s %s\n'%(fnam,gnam))
+                sys.stderr.write(f'D {fnam} {gnam}\n')
                 if args.copy_different:
                     copy_list.append((fnam,gnam,False))
                 elif args.move_different:
@@ -205,37 +205,37 @@ for line in lines:
             else:
                 if os.path.realpath(fnam) == os.path.realpath(gnam):
                     if not args.quiet:
-                        sys.stderr.write('SI %s\n'%(fnam))
+                        sys.stderr.write(f'SI {fnam}\n')
                 else:
                     if os.path.dirname(os.path.realpath(fnam)) != os.path.abspath(os.path.dirname(fnam)): # inside a link
                         if not args.quiet:
-                            sys.stderr.write('SL %s\n'%(fnam))
+                            sys.stderr.write(f'SL {fnam}\n')
                     else:
                         if not args.quiet:
-                            sys.stderr.write('S %s\n'%(fnam))
+                            sys.stderr.write(f'S {fnam}\n')
                         if args.remove_same:
                             remove_list.append(fnam)
                 nsam += 1
         continue
-    m = re.search('Differing\s+files\s*:\s*(\[.*\])',line)
+    m = re.search(r'Differing\s+files\s*:\s*(\[.*\])',line)
     if m:
         files = eval(m.group(1))
         for f in files:
             fnam = os.path.join(srcdir,f)
             gnam = os.path.join(dstdir,f)
-            sys.stderr.write('D %s %s\n'%(fnam,gnam))
+            sys.stderr.write(f'D {fnam} {gnam}\n')
             if args.copy_different:
                 copy_list.append((fnam,gnam,False))
             elif args.move_different:
                 move_list.append((fnam,gnam))
             ndif += 1
         continue
-    m = re.search('Common\s+subdirectories\s*:\s*(\[.*\])',line)
+    m = re.search(r'Common\s+subdirectories\s*:\s*(\[.*\])',line)
     if m:
         subs = [os.path.join(srcdir,d) for d in eval(m.group(1))]
         dirs.extend(subs)
         continue
-    m = re.search('Common\s+funny\s+cases\s*:\s*(\[.*\])',line)
+    m = re.search(r'Common\s+funny\s+cases\s*:\s*(\[.*\])',line)
     if m:
         files = eval(m.group(1))
         for f in files:
@@ -253,7 +253,7 @@ for line in lines:
             else:
                 test = filecmp.cmp(fnam,gnam,shallow=False)
             if not test:
-                sys.stderr.write('D %s %s\n'%(fnam,gnam))
+                sys.stderr.write(f'D {fnam} {gnam}\n')
                 if args.copy_different:
                     copy_list.append((fnam,gnam,False))
                 elif args.move_different:
@@ -262,40 +262,40 @@ for line in lines:
             else:
                 if os.path.realpath(fnam) == os.path.realpath(gnam):
                     if not args.quiet:
-                        sys.stderr.write('SI %s\n'%(fnam))
+                        sys.stderr.write(f'SI {fnam}\n')
                 else:
                     if os.path.dirname(os.path.realpath(fnam)) != os.path.abspath(os.path.dirname(fnam)): # inside a link
                         if not args.quiet:
-                            sys.stderr.write('SL %s\n'%(fnam))
+                            sys.stderr.write(f'SL {fnam}\n')
                     else:
                         if not args.quiet:
-                            sys.stderr.write('S %s\n'%(fnam))
+                            sys.stderr.write(f'S {fnam}\n')
                         if args.remove_same:
                             remove_list.append(fnam)
                 nsam += 1
         continue
-    sys.stderr.write('Unprocessed line in (%s %s):\n'%(srcdir,dstdir))
+    sys.stderr.write(f'Unprocessed line in ({srcdir} {dstdir}):\n')
     sys.stderr.write(line+'\n')
 ncop = 0
 nmov = 0
 nrem = 0
 for fnam,gnam,flag in copy_list:
     if args.dry_run:
-        sys.stderr.write('cp %s %s\n'%(fnam,gnam))
+        sys.stderr.write(f'cp {fnam} {gnam}\n')
     else:
         copy_file(fnam,gnam,args.quiet,directory=flag)
         if os.path.exists(gnam):
             ncop += 1
 for fnam,gnam in move_list:
     if args.dry_run:
-        sys.stderr.write('mv %s %s\n'%(fnam,gnam))
+        sys.stderr.write(f'mv {fnam} {gnam}\n')
     else:
         move_file(fnam,gnam,args.quiet)
         if not os.path.exists(fnam) and os.path.exists(gnam):
             nmov += 1
 for fnam in remove_list:
     if args.dry_run:
-        sys.stderr.write('rm %s\n'%(fnam))
+        sys.stderr.write(f'rm {fnam}\n')
     else:
         remove_file(fnam,args.quiet)
         if not os.path.exists(fnam):
@@ -303,21 +303,21 @@ for fnam in remove_list:
 if args.remove_same:
     for d in dirs:
         if args.dry_run:
-            sys.stderr.write('rmdir %s\n'%(d))
+            sys.stderr.write(f'rmdir {d}\n')
         else:
             try:
                 if args.quiet:
                     os.removedirs(d)
                 else:
-                    sys.stderr.write('Remove %s?\n'%(d))
+                    sys.stderr.write(f'Remove {d}?\n')
                     line = sys.stdin.readline()
                     if re.search('[yY]',line):
                         os.removedirs(d)
             except Exception:
                 pass
-sys.stderr.write('Same    : %5d files\n'%(nsam))
-sys.stderr.write('Missing : %5d files\n'%(nmis))
-sys.stderr.write('Differ  : %5d files\n'%(ndif))
-sys.stderr.write('Moved   : %5d files\n'%(nmov))
-sys.stderr.write('Copied  : %5d files\n'%(ncop))
-sys.stderr.write('Removed : %5d files\n'%(nrem))
+sys.stderr.write(f'Same    : {nsam:5d} files\n')
+sys.stderr.write(f'Missing : {nmis:5d} files\n')
+sys.stderr.write(f'Differ  : {ndif:5d} files\n')
+sys.stderr.write(f'Moved   : {nmov:5d} files\n')
+sys.stderr.write(f'Copied  : {ncop:5d} files\n')
+sys.stderr.write(f'Removed : {nrem:5d} files\n')
