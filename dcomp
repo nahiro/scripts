@@ -151,9 +151,10 @@ for line in lines:
         dstdir = args.dstdir+m.group(1)
         continue
     if '(' in srcdir or ')' in srcdir:
-        m = re.search(u'Only\s+in\s+%s\s*:\s*(\[.*\])'%(srcdir.replace('(','\(').replace(')','\)')),line)
+        srcdir_rep = srcdir.replace('(',r'\(').replace(')',r'\)')
+        m = re.search(rf'Only\s+in\s+{srcdir_rep}\s*:\s*(\[.*\])',line)
     else:
-        m = re.search(u'Only\s+in\s+%s\s*:\s*(\[.*\])'%(srcdir),line)
+        m = re.search(rf'Only\s+in\s+{srcdir}\s*:\s*(\[.*\])',line)
     if m:
         files = eval(m.group(1))
         for f in files:
@@ -173,9 +174,10 @@ for line in lines:
             nmis += 1
         continue
     if '(' in dstdir or ')' in dstdir:
-        m = re.search(u'Only\s+in\s+%s'%(dstdir.replace('(','\(').replace(')','\)')),line)
+        dstdir_rep = dstdir.replace('(',r'\(').replace(')',r'\)')
+        m = re.search(rf'Only\s+in\s+{dstdir_rep}',line)
     else:
-        m = re.search(u'Only\s+in\s+%s'%(dstdir),line)
+        m = re.search(rf'Only\s+in\s+{dstdir}',line)
     if m: # Do nothing
         continue
     m = re.search(r'Identical\s+files\s*:\s*(\[.*\])',line)
