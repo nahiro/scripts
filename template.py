@@ -6,12 +6,15 @@ import matplotlib.cm as cm
 x,y = np.loadtxt('',unpack=True)
 
 plt.interactive(True)
-fig = plt.figure(1,facecolor='w',figsize=(6,3.5))
-fig.clear()
+if plt.fignum_exists(1):
+    fig = plt.figure(1)
+else;
+    fig = plt.figure(1,facecolor='w',figsize=(6,3.5))
 plt.subplots_adjust(top=0.85,bottom=0.20,left=0.15,right=0.90)
+fig.clear()
 ax1 = plt.subplot(111)
 ax1.minorticks_on()
-ax1.grid(True)
+#ax1.grid(True)
 #ax1.set_xscale('log')
 #ax1.set_yscale('log')
 ax1.plot(x,y,'b-',label='')
