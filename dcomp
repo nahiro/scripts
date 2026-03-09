@@ -64,6 +64,7 @@ def move_file(src,dst,quiet=False):
             shutil.move(src,dst)
         else:
             sys.stderr.write(f'Overwrite {dst}?\n')
+            sys.stderr.flush()
             line = sys.stdin.readline()
             if re.search('[yY]',line):
                 os.remove(dst)
@@ -88,6 +89,7 @@ def copy_file(src,dst,quiet=False,directory=False):
                     shutil.copy2(src,dst)
         else:
             sys.stderr.write(f'Overwrite {dst}?\n')
+            sys.stderr.flush()
             line = sys.stdin.readline()
             if re.search('[yY]',line):
                 if os.path.isdir(src):
@@ -119,6 +121,7 @@ def remove_file(src,quiet=False):
         os.remove(src)
     else:
         sys.stderr.write(f'Remove {src}?\n')
+        sys.stderr.flush()
         line = sys.stdin.readline()
         if re.search('[yY]',line):
             os.remove(src)
@@ -312,6 +315,7 @@ if args.remove_same:
                     os.removedirs(d)
                 else:
                     sys.stderr.write(f'Remove {d}?\n')
+                    sys.stderr.flush()
                     line = sys.stdin.readline()
                     if re.search('[yY]',line):
                         os.removedirs(d)
