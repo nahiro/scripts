@@ -30,8 +30,8 @@ parser.add_argument('-r','--remove_same',default=False,action='store_true',help=
 parser.add_argument('-S','--size_only',default=False,action='store_true',help='Check size only (%(default)s)')
 parser.add_argument('-n','--dry_run',default=False,action='store_true',help='Perform a trial run with no changes made (%(default)s)')
 parser.add_argument('-q','--quiet',default=False,action='store_true',help='Quiet mode (%(default)s)')
-parser.add_option('-D','--diff_only',default=False,action='store_true',help='Output only different files (%default)')
-parser.add_option('-M','--miss_only',default=False,action='store_true',help='Output only missing files (%default)')
+parser.add_argument('-D','--diff_only',default=False,action='store_true',help='Output only different files (%(default)s)')
+parser.add_argument('-M','--miss_only',default=False,action='store_true',help='Output only missing files (%(default)s)')
 (args,rest) = parser.parse_known_args()
 if args.dstdir is None:
     if len(rest) != 1:
