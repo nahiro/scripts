@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Check if a filename is provided
+if [ -z "$1" ]; then
+    echo "Usage: $0 <filename.pkl> [num_rows]"
+    exit 1
+fi
+
+# Pass filename and row count (default to empty string if not provided)
+# Use "$2" to ensure it's passed as an argument even if empty
+python -c "
+import pandas as pd
+import sys
+
+# Disable all display limits
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', None)
+pd.set_option('display.max_colwidth', None)
+
+file_path = sys.argv[1]
+# Check if the second argument exists and is not empty
+raw_n = sys.argv[2] if len(sys.argv) > 2 else ''
+n = int(raw_n) if raw_n != '' else None
+
+try:
+    df = pd.read_pickle(file_path)
+    
+    if n is None:
+        print(df)
+    elif n >= 0:
+        print(df.head(n))
+    else:
+        abs_n = abs(n)
+        print(f'--- Top {abs_n} rows ---')
+        print(df.head(abs_n))
+        print(f'\n--- Bottom {abs_n} rows ---')
+        print(df.tail(abs_n))
+        
+except Exception as e:
+    print(f'Error: {e}')
+" "$1" "$2"
